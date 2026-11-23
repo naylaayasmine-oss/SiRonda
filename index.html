@@ -1,0 +1,1444 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SiRonda — Jadwal Pos Kamling</title>
+  <link
+    rel="stylesheet"
+    href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+  />
+  <link
+    rel="stylesheet"
+    href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css"
+  />
+  <style>
+    /* ===== Base ===== */
+    body {
+      font-size: 15px;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    main {
+      flex: 1 0 auto;
+    }
+
+    /* ===== Header gradient — merah ===== */
+    .kml-header {
+      background: linear-gradient(135deg, #7f1d1d 0%, #b91c1c 60%, #dc2626 100%);
+    }
+    .kml-header h1 {
+      letter-spacing: 0.5px;
+      text-shadow: 0 1px 3px rgba(0,0,0,0.35);
+    }
+    .kml-header p {
+      letter-spacing: 1px;
+      font-size: 0.82rem;
+    }
+
+    /* ===== Override Bootstrap primary → merah ===== */
+    .btn-primary {
+      --bs-btn-bg: #dc2626;
+      --bs-btn-border-color: #dc2626;
+      --bs-btn-hover-bg: #b91c1c;
+      --bs-btn-hover-border-color: #b91c1c;
+      --bs-btn-active-bg: #991b1b;
+      --bs-btn-active-border-color: #991b1b;
+    }
+    .table-primary {
+      --bs-table-bg: #fff1f2;
+      --bs-table-striped-bg: #ffe4e6;
+      color: #7f1d1d;
+    }
+
+    /* ===== Navigasi bulan card ===== */
+    .kml-nav-card {
+      background: #fff;
+      border: 1px solid #fecdd3;
+      border-radius: 10px;
+      padding: 0.75rem 1.25rem;
+      box-shadow: 0 1px 4px rgba(220,38,38,0.08);
+    }
+    #label-bulan {
+      min-width: 180px;
+      text-align: center;
+      color: #991b1b;
+    }
+
+    /* ===== Table card wrapper ===== */
+    .kml-table-card {
+      background: #fff;
+      border: 1px solid #fecdd3;
+      border-radius: 10px;
+      padding: 1rem;
+      box-shadow: 0 1px 4px rgba(220,38,38,0.08);
+      overflow-x: auto;
+    }
+
+    /* ===== Table row hover ===== */
+    .table-hover tbody tr:hover td {
+      background-color: #fff1f2 !important;
+      transition: background-color 0.15s ease;
+    }
+
+    /* ===== Daftar Warga grid ===== */
+    .kml-warga-card {
+      background: #fff;
+      border: 1px solid #fecdd3;
+      border-radius: 10px;
+      padding: 1rem 1.25rem;
+      box-shadow: 0 1px 4px rgba(220,38,38,0.08);
+    }
+    .kml-warga-item {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      padding: 0.45rem 0.6rem;
+      border-radius: 8px;
+      border: 1px solid #ffe4e6;
+      background: #fff5f5;
+      font-size: 0.9rem;
+    }
+    .kml-warga-item .warga-no {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: #dc2626;
+      color: #fff8f0;
+      font-size: 0.75rem;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+    .kml-warga-item .warga-nama {
+      font-weight: 500;
+      color: #1e293b;
+      flex: 1;
+    }
+    .kml-warga-item .warga-rumah {
+      font-size: 0.75rem;
+      color: #64748b;
+    }
+
+    /* ===== Footer ===== */
+    .kml-footer {
+      background: #7f1d1d;
+      color: #fde8e8;
+      font-size: 0.82rem;
+      padding: 0.9rem 1rem;
+      text-align: center;
+      letter-spacing: 0.3px;
+      flex-shrink: 0;
+    }
+
+    /* ===== Mobile tweaks ===== */
+    @media (max-width: 576px) {
+      body { font-size: 14px; }
+      .kml-header h1 { font-size: 1.15rem; }
+      .kml-nav-card { padding: 0.5rem 0.75rem; }
+      #label-bulan { min-width: 130px; font-size: 0.95rem; }
+      .btn-sm { font-size: 0.8rem; padding: 0.3rem 0.55rem; }
+    }
+  </style>
+</head>
+<body class="bg-light">
+
+  <!-- ===== HEADER ===== -->
+  <header class="kml-header text-white py-3 shadow-sm">
+    <div class="container text-center">
+      <h1 class="h3 mb-1 fw-bold">
+        <i class="bi bi-shield-shaded me-2"></i>SiRonda
+      </h1>
+      <p class="mb-0 opacity-90" style="font-size:0.85rem;letter-spacing:0.08em;">Sistem Informasi Ronda Malam</p>
+      <p class="mb-1 opacity-90 fw-semibold" style="font-size:1rem;">Kampung Yuwanain</p>
+      <p class="mb-0 opacity-75">
+        <i class="bi bi-house-fill me-1"></i>RT 05 / RW 03
+      </p>
+    </div>
+  </header>
+
+  <!-- ===== MAIN ===== -->
+  <main class="container my-4">
+
+    <!-- Navigasi Bulan -->
+    <div class="d-flex align-items-center justify-content-center gap-3 mb-4">
+      <div class="kml-nav-card d-flex align-items-center gap-3">
+        <button id="btn-prev" class="btn btn-primary btn-sm" aria-label="Bulan sebelumnya">
+          <i class="bi bi-chevron-left"></i> Prev
+        </button>
+        <span id="label-bulan" class="fw-semibold fs-5">
+          <i class="bi bi-calendar3 me-1 text-primary"></i>— Pilih Bulan —
+        </span>
+        <button id="btn-next" class="btn btn-primary btn-sm" aria-label="Bulan berikutnya">
+          Next <i class="bi bi-chevron-right"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- Kontainer Tabel Jadwal -->
+    <div class="kml-table-card mb-4">
+      <div id="tabel-container">
+        <!-- Tabel jadwal akan di-render oleh JavaScript -->
+      </div>
+    </div>
+
+    <!-- ===== DAFTAR WARGA ===== -->
+    <div class="kml-warga-card mb-4">
+      <h5 class="fw-bold mb-3" style="color:#991b1b;">
+        <i class="bi bi-people-fill me-2"></i>Daftar Warga
+      </h5>
+      <div class="row g-2" id="daftar-warga-container">
+        <!-- Di-render oleh renderDaftarWarga() -->
+      </div>
+    </div>
+
+  </main>
+
+  <!-- ===== FOOTER ===== -->
+  <footer class="kml-footer">
+    <i class="bi bi-shield-shaded me-1"></i>
+    RT 05 / RW 03 &mdash; SiRonda &copy; 2026–2027
+  </footer>
+
+  <!-- ===== MODAL EDIT JADWAL (pengurus — checkbox warga) ===== -->
+  <div class="modal fade" id="editModal" tabindex="-1" aria-labelledby="editModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+      <div class="modal-content">
+        <div class="modal-header bg-warning">
+          <h5 class="modal-title fw-bold" id="editModalLabel">
+            <i class="bi bi-pencil-square me-2"></i>Edit Jadwal
+          </h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
+        </div>
+        <div class="modal-body">
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Tanggal</label>
+            <input type="text" id="edit-tanggal-display" class="form-control" readonly disabled />
+            <input type="hidden" id="edit-tanggal-value" />
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Pilih Warga Jaga <small class="text-muted fw-normal">(centang nama)</small></label>
+            <div id="edit-warga-checks" class="row g-2 mt-1">
+              <!-- Di-generate oleh JS -->
+            </div>
+          </div>
+          <div class="mb-3">
+            <label for="edit-shift" class="form-label fw-semibold">Shift</label>
+            <select id="edit-shift" class="form-select">
+              <option value="21.00–03.00">21.00–03.00</option>
+              <option value="20.00–02.00">20.00–02.00</option>
+              <option value="22.00–04.00">22.00–04.00</option>
+            </select>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+            <i class="bi bi-x-circle me-1"></i>Batal
+          </button>
+          <button type="button" class="btn btn-warning fw-semibold" onclick="simpanJadwal()">
+            <i class="bi bi-check-circle me-1"></i>Simpan
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== MODAL DAFTARKAN SAYA (warga — pilih nama sendiri) ===== -->
+  <div class="modal fade" id="daftarModal" tabindex="-1" aria-labelledby="daftarModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header" style="background:#ffe4e6;">
+          <h5 class="modal-title fw-bold" id="daftarModalLabel" style="color:#991b1b;">
+            <i class="bi bi-person-check me-2"></i>Daftarkan Saya
+          </h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
+        </div>
+        <div class="modal-body">
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Tanggal</label>
+            <input type="text" id="daftar-tanggal-display" class="form-control" readonly disabled />
+            <input type="hidden" id="daftar-tanggal-value" />
+          </div>
+          <div class="mb-3">
+            <label for="daftar-nama" class="form-label fw-semibold">Nama Saya</label>
+            <select id="daftar-nama" class="form-select">
+              <option value="">— Pilih nama Anda —</option>
+            </select>
+          </div>
+          <div id="daftar-info" class="text-muted small mt-1"></div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+            <i class="bi bi-x-circle me-1"></i>Batal
+          </button>
+          <button type="button" class="btn fw-semibold" style="background:#dc2626;color:#fff8f0;" onclick="simpanDaftarSaya()">
+            <i class="bi bi-person-plus me-1"></i>Daftarkan
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bootstrap JS Bundle (Popper included) -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+  <!-- App Script -->
+  <script>
+    // =====================================================
+    // Jadwal Pos Kamling — App Script
+    // =====================================================
+
+    // ---------------------------------------------------------
+    // DATA WARGA
+    // Cara mengubah: tambah, hapus, atau edit objek di dalam
+    // array ini. Setiap objek wajib memiliki:
+    //   id      — angka unik (tidak boleh duplikat)
+    //   nama    — string nama lengkap warga
+    //   noRumah — string nomor rumah/alamat singkat
+    // ---------------------------------------------------------
+    const warga = [
+      { id: 1,  nama: "Budi Santoso",      noRumah: "01" },
+      { id: 2,  nama: "Agus Priyono",      noRumah: "02" },
+      { id: 3,  nama: "Hendra Wijaya",     noRumah: "03" },
+      { id: 4,  nama: "Slamet Riyadi",     noRumah: "04" },
+      { id: 5,  nama: "Dodi Kurniawan",    noRumah: "05" },
+      { id: 6,  nama: "Eko Prasetyo",      noRumah: "06" },
+      { id: 7,  nama: "Fajar Nugroho",     noRumah: "07" },
+      { id: 8,  nama: "Gunawan Susanto",   noRumah: "08" },
+      { id: 9,  nama: "Hadi Sumarno",      noRumah: "09" },
+      { id: 10, nama: "Irwan Setiawan",    noRumah: "10" },
+      { id: 11, nama: "Joko Purnomo",      noRumah: "11" },
+      { id: 12, nama: "Krisna Mahendra",   noRumah: "12" },
+      { id: 13, nama: "Lutfi Hakim",       noRumah: "13" },
+      { id: 14, nama: "Mulyadi Santosa",   noRumah: "14" },
+      { id: 15, nama: "Nanang Hidayat",    noRumah: "15" },
+      { id: 16, nama: "Oki Firmansyah",    noRumah: "16" },
+      { id: 17, nama: "Pandu Wibowo",      noRumah: "17" },
+      { id: 18, nama: "Rendi Saputra",     noRumah: "18" },
+      { id: 19, nama: "Suryo Atmojo",      noRumah: "19" },
+      { id: 20, nama: "Teguh Prasetya",    noRumah: "20" },
+    ];
+
+    // ---------------------------------------------------------
+    // DATA JADWAL
+    // Cara mengubah: edit objek pada tanggal yang diinginkan.
+    // Setiap entri wajib memiliki:
+    //   id      — angka unik (tidak boleh duplikat)
+    //   tanggal — string format "YYYY-MM-DD"
+    //   warga   — array berisi 2–3 nama warga yang berjaga
+    //   shift   — string jam jaga, misalnya "21.00–03.00"
+    // Untuk menambah entri bulan lain, cukup tambahkan objek
+    // baru dengan tanggal yang sesuai di bawah entri terakhir.
+    // ---------------------------------------------------------
+    let jadwal = [
+      // ===== JANUARI 2026 (31 hari) =====
+      { id: 101, tanggal: "2026-01-01", warga: ["Budi Santoso",    "Agus Priyono",   "Hendra Wijaya"],   shift: "21.00–03.00" },
+      { id: 102, tanggal: "2026-01-02", warga: ["Slamet Riyadi",   "Dodi Kurniawan", "Eko Prasetyo"],    shift: "21.00–03.00" },
+      { id: 103, tanggal: "2026-01-03", warga: ["Fajar Nugroho",   "Gunawan Susanto","Hadi Sumarno"],    shift: "21.00–03.00" },
+      { id: 104, tanggal: "2026-01-04", warga: ["Irwan Setiawan",  "Joko Purnomo",   "Krisna Mahendra"], shift: "21.00–03.00" },
+      { id: 105, tanggal: "2026-01-05", warga: ["Budi Santoso",    "Slamet Riyadi",  "Fajar Nugroho"],   shift: "21.00–03.00" },
+      { id: 106, tanggal: "2026-01-06", warga: ["Agus Priyono",    "Dodi Kurniawan", "Gunawan Susanto"], shift: "21.00–03.00" },
+      { id: 107, tanggal: "2026-01-07", warga: ["Hendra Wijaya",   "Eko Prasetyo",   "Hadi Sumarno"],    shift: "21.00–03.00" },
+      { id: 108, tanggal: "2026-01-08", warga: ["Irwan Setiawan",  "Budi Santoso",   "Krisna Mahendra"], shift: "21.00–03.00" },
+      { id: 109, tanggal: "2026-01-09", warga: ["Joko Purnomo",    "Agus Priyono",   "Slamet Riyadi"],   shift: "21.00–03.00" },
+      { id: 110, tanggal: "2026-01-10", warga: ["Fajar Nugroho",   "Dodi Kurniawan", "Hendra Wijaya"],   shift: "21.00–03.00" },
+      { id: 111, tanggal: "2026-01-11", warga: ["Eko Prasetyo",    "Gunawan Susanto","Irwan Setiawan"],  shift: "21.00–03.00" },
+      { id: 112, tanggal: "2026-01-12", warga: ["Hadi Sumarno",    "Krisna Mahendra","Budi Santoso"],    shift: "21.00–03.00" },
+      { id: 113, tanggal: "2026-01-13", warga: ["Agus Priyono",    "Slamet Riyadi",  "Fajar Nugroho"],   shift: "21.00–03.00" },
+      { id: 114, tanggal: "2026-01-14", warga: ["Hendra Wijaya",   "Dodi Kurniawan", "Joko Purnomo"],    shift: "21.00–03.00" },
+      { id: 115, tanggal: "2026-01-15", warga: ["Eko Prasetyo",    "Irwan Setiawan", "Gunawan Susanto"], shift: "21.00–03.00" },
+      { id: 116, tanggal: "2026-01-16", warga: ["Hadi Sumarno",    "Budi Santoso",   "Krisna Mahendra"], shift: "21.00–03.00" },
+      { id: 117, tanggal: "2026-01-17", warga: ["Agus Priyono",    "Fajar Nugroho",  "Slamet Riyadi"],   shift: "21.00–03.00" },
+      { id: 118, tanggal: "2026-01-18", warga: ["Hendra Wijaya",   "Joko Purnomo",   "Dodi Kurniawan"],  shift: "21.00–03.00" },
+      { id: 119, tanggal: "2026-01-19", warga: ["Eko Prasetyo",    "Krisna Mahendra","Irwan Setiawan"],  shift: "21.00–03.00" },
+      { id: 120, tanggal: "2026-01-20", warga: ["Gunawan Susanto", "Hadi Sumarno",   "Budi Santoso"],    shift: "21.00–03.00" },
+      { id: 121, tanggal: "2026-01-21", warga: ["Agus Priyono",    "Slamet Riyadi",  "Fajar Nugroho"],   shift: "21.00–03.00" },
+      { id: 122, tanggal: "2026-01-22", warga: ["Hendra Wijaya",   "Dodi Kurniawan", "Joko Purnomo"],    shift: "21.00–03.00" },
+      { id: 123, tanggal: "2026-01-23", warga: ["Eko Prasetyo",    "Irwan Setiawan", "Krisna Mahendra"], shift: "21.00–03.00" },
+      { id: 124, tanggal: "2026-01-24", warga: ["Hadi Sumarno",    "Budi Santoso",   "Gunawan Susanto"], shift: "21.00–03.00" },
+      { id: 125, tanggal: "2026-01-25", warga: ["Agus Priyono",    "Fajar Nugroho",  "Slamet Riyadi"],   shift: "21.00–03.00" },
+      { id: 126, tanggal: "2026-01-26", warga: ["Hendra Wijaya",   "Joko Purnomo",   "Dodi Kurniawan"],  shift: "21.00–03.00" },
+      { id: 127, tanggal: "2026-01-27", warga: ["Eko Prasetyo",    "Krisna Mahendra","Irwan Setiawan"],  shift: "21.00–03.00" },
+      { id: 128, tanggal: "2026-01-28", warga: ["Gunawan Susanto", "Hadi Sumarno",   "Budi Santoso"],    shift: "21.00–03.00" },
+      { id: 129, tanggal: "2026-01-29", warga: ["Agus Priyono",    "Slamet Riyadi",  "Fajar Nugroho"],   shift: "21.00–03.00" },
+      { id: 130, tanggal: "2026-01-30", warga: ["Hendra Wijaya",   "Dodi Kurniawan", "Joko Purnomo"],    shift: "21.00–03.00" },
+      { id: 131, tanggal: "2026-01-31", warga: ["Eko Prasetyo",    "Irwan Setiawan", "Krisna Mahendra"], shift: "21.00–03.00" },
+      // ===== FEBRUARI 2026 (28 hari) =====
+      { id: 132, tanggal: "2026-02-01", warga: ["Budi Santoso",    "Agus Priyono",   "Hendra Wijaya"],   shift: "21.00–03.00" },
+      { id: 133, tanggal: "2026-02-02", warga: ["Slamet Riyadi",   "Dodi Kurniawan", "Eko Prasetyo"],    shift: "21.00–03.00" },
+      { id: 134, tanggal: "2026-02-03", warga: ["Fajar Nugroho",   "Gunawan Susanto","Hadi Sumarno"],    shift: "21.00–03.00" },
+      { id: 135, tanggal: "2026-02-04", warga: ["Irwan Setiawan",  "Joko Purnomo",   "Krisna Mahendra"], shift: "21.00–03.00" },
+      { id: 136, tanggal: "2026-02-05", warga: ["Budi Santoso",    "Slamet Riyadi",  "Fajar Nugroho"],   shift: "21.00–03.00" },
+      { id: 137, tanggal: "2026-02-06", warga: ["Agus Priyono",    "Dodi Kurniawan", "Gunawan Susanto"], shift: "21.00–03.00" },
+      { id: 138, tanggal: "2026-02-07", warga: ["Hendra Wijaya",   "Eko Prasetyo",   "Hadi Sumarno"],    shift: "21.00–03.00" },
+      { id: 139, tanggal: "2026-02-08", warga: ["Irwan Setiawan",  "Budi Santoso",   "Krisna Mahendra"], shift: "21.00–03.00" },
+      { id: 140, tanggal: "2026-02-09", warga: ["Joko Purnomo",    "Agus Priyono",   "Slamet Riyadi"],   shift: "21.00–03.00" },
+      { id: 141, tanggal: "2026-02-10", warga: ["Fajar Nugroho",   "Dodi Kurniawan", "Hendra Wijaya"],   shift: "21.00–03.00" },
+      { id: 142, tanggal: "2026-02-11", warga: ["Eko Prasetyo",    "Gunawan Susanto","Irwan Setiawan"],  shift: "21.00–03.00" },
+      { id: 143, tanggal: "2026-02-12", warga: ["Hadi Sumarno",    "Krisna Mahendra","Budi Santoso"],    shift: "21.00–03.00" },
+      { id: 144, tanggal: "2026-02-13", warga: ["Agus Priyono",    "Slamet Riyadi",  "Fajar Nugroho"],   shift: "21.00–03.00" },
+      { id: 145, tanggal: "2026-02-14", warga: ["Hendra Wijaya",   "Dodi Kurniawan", "Joko Purnomo"],    shift: "21.00–03.00" },
+      { id: 146, tanggal: "2026-02-15", warga: ["Eko Prasetyo",    "Irwan Setiawan", "Gunawan Susanto"], shift: "21.00–03.00" },
+      { id: 147, tanggal: "2026-02-16", warga: ["Hadi Sumarno",    "Budi Santoso",   "Krisna Mahendra"], shift: "21.00–03.00" },
+      { id: 148, tanggal: "2026-02-17", warga: ["Agus Priyono",    "Fajar Nugroho",  "Slamet Riyadi"],   shift: "21.00–03.00" },
+      { id: 149, tanggal: "2026-02-18", warga: ["Hendra Wijaya",   "Joko Purnomo",   "Dodi Kurniawan"],  shift: "21.00–03.00" },
+      { id: 150, tanggal: "2026-02-19", warga: ["Eko Prasetyo",    "Krisna Mahendra","Irwan Setiawan"],  shift: "21.00–03.00" },
+      { id: 151, tanggal: "2026-02-20", warga: ["Gunawan Susanto", "Hadi Sumarno",   "Budi Santoso"],    shift: "21.00–03.00" },
+      { id: 152, tanggal: "2026-02-21", warga: ["Agus Priyono",    "Slamet Riyadi",  "Fajar Nugroho"],   shift: "21.00–03.00" },
+      { id: 153, tanggal: "2026-02-22", warga: ["Hendra Wijaya",   "Dodi Kurniawan", "Joko Purnomo"],    shift: "21.00–03.00" },
+      { id: 154, tanggal: "2026-02-23", warga: ["Eko Prasetyo",    "Irwan Setiawan", "Krisna Mahendra"], shift: "21.00–03.00" },
+      { id: 155, tanggal: "2026-02-24", warga: ["Hadi Sumarno",    "Budi Santoso",   "Gunawan Susanto"], shift: "21.00–03.00" },
+      { id: 156, tanggal: "2026-02-25", warga: ["Agus Priyono",    "Fajar Nugroho",  "Slamet Riyadi"],   shift: "21.00–03.00" },
+      { id: 157, tanggal: "2026-02-26", warga: ["Hendra Wijaya",   "Joko Purnomo",   "Dodi Kurniawan"],  shift: "21.00–03.00" },
+      { id: 158, tanggal: "2026-02-27", warga: ["Eko Prasetyo",    "Krisna Mahendra","Irwan Setiawan"],  shift: "21.00–03.00" },
+      { id: 159, tanggal: "2026-02-28", warga: ["Gunawan Susanto", "Hadi Sumarno",   "Budi Santoso"],    shift: "21.00–03.00" },
+      // ===== MARET 2026 (31 hari) =====
+      { id: 160, tanggal: "2026-03-01", warga: ["Agus Priyono",    "Slamet Riyadi",  "Fajar Nugroho"],   shift: "21.00–03.00" },
+      { id: 161, tanggal: "2026-03-02", warga: ["Hendra Wijaya",   "Dodi Kurniawan", "Joko Purnomo"],    shift: "21.00–03.00" },
+      { id: 162, tanggal: "2026-03-03", warga: ["Eko Prasetyo",    "Irwan Setiawan", "Krisna Mahendra"], shift: "21.00–03.00" },
+      { id: 163, tanggal: "2026-03-04", warga: ["Hadi Sumarno",    "Budi Santoso",   "Gunawan Susanto"], shift: "21.00–03.00" },
+      { id: 164, tanggal: "2026-03-05", warga: ["Agus Priyono",    "Fajar Nugroho",  "Slamet Riyadi"],   shift: "21.00–03.00" },
+      { id: 165, tanggal: "2026-03-06", warga: ["Hendra Wijaya",   "Joko Purnomo",   "Dodi Kurniawan"],  shift: "21.00–03.00" },
+      { id: 166, tanggal: "2026-03-07", warga: ["Eko Prasetyo",    "Krisna Mahendra","Irwan Setiawan"],  shift: "21.00–03.00" },
+      { id: 167, tanggal: "2026-03-08", warga: ["Gunawan Susanto", "Hadi Sumarno",   "Budi Santoso"],    shift: "21.00–03.00" },
+      { id: 168, tanggal: "2026-03-09", warga: ["Agus Priyono",    "Slamet Riyadi",  "Fajar Nugroho"],   shift: "21.00–03.00" },
+      { id: 169, tanggal: "2026-03-10", warga: ["Hendra Wijaya",   "Dodi Kurniawan", "Joko Purnomo"],    shift: "21.00–03.00" },
+      { id: 170, tanggal: "2026-03-11", warga: ["Eko Prasetyo",    "Irwan Setiawan", "Krisna Mahendra"], shift: "21.00–03.00" },
+      { id: 171, tanggal: "2026-03-12", warga: ["Hadi Sumarno",    "Budi Santoso",   "Gunawan Susanto"], shift: "21.00–03.00" },
+      { id: 172, tanggal: "2026-03-13", warga: ["Agus Priyono",    "Fajar Nugroho",  "Slamet Riyadi"],   shift: "21.00–03.00" },
+      { id: 173, tanggal: "2026-03-14", warga: ["Hendra Wijaya",   "Joko Purnomo",   "Dodi Kurniawan"],  shift: "21.00–03.00" },
+      { id: 174, tanggal: "2026-03-15", warga: ["Eko Prasetyo",    "Krisna Mahendra","Irwan Setiawan"],  shift: "21.00–03.00" },
+      { id: 175, tanggal: "2026-03-16", warga: ["Gunawan Susanto", "Hadi Sumarno",   "Budi Santoso"],    shift: "21.00–03.00" },
+      { id: 176, tanggal: "2026-03-17", warga: ["Budi Santoso",    "Agus Priyono",   "Hendra Wijaya"],   shift: "21.00–03.00" },
+      { id: 177, tanggal: "2026-03-18", warga: ["Slamet Riyadi",   "Dodi Kurniawan", "Eko Prasetyo"],    shift: "21.00–03.00" },
+      { id: 178, tanggal: "2026-03-19", warga: ["Fajar Nugroho",   "Gunawan Susanto","Hadi Sumarno"],    shift: "21.00–03.00" },
+      { id: 179, tanggal: "2026-03-20", warga: ["Irwan Setiawan",  "Joko Purnomo",   "Krisna Mahendra"], shift: "21.00–03.00" },
+      { id: 180, tanggal: "2026-03-21", warga: ["Budi Santoso",    "Slamet Riyadi",  "Fajar Nugroho"],   shift: "21.00–03.00" },
+      { id: 181, tanggal: "2026-03-22", warga: ["Agus Priyono",    "Dodi Kurniawan", "Gunawan Susanto"], shift: "21.00–03.00" },
+      { id: 182, tanggal: "2026-03-23", warga: ["Hendra Wijaya",   "Eko Prasetyo",   "Hadi Sumarno"],    shift: "21.00–03.00" },
+      { id: 183, tanggal: "2026-03-24", warga: ["Irwan Setiawan",  "Budi Santoso",   "Krisna Mahendra"], shift: "21.00–03.00" },
+      { id: 184, tanggal: "2026-03-25", warga: ["Joko Purnomo",    "Agus Priyono",   "Slamet Riyadi"],   shift: "21.00–03.00" },
+      { id: 185, tanggal: "2026-03-26", warga: ["Fajar Nugroho",   "Dodi Kurniawan", "Hendra Wijaya"],   shift: "21.00–03.00" },
+      { id: 186, tanggal: "2026-03-27", warga: ["Eko Prasetyo",    "Gunawan Susanto","Irwan Setiawan"],  shift: "21.00–03.00" },
+      { id: 187, tanggal: "2026-03-28", warga: ["Hadi Sumarno",    "Krisna Mahendra","Budi Santoso"],    shift: "21.00–03.00" },
+      { id: 188, tanggal: "2026-03-29", warga: ["Agus Priyono",    "Slamet Riyadi",  "Fajar Nugroho"],   shift: "21.00–03.00" },
+      { id: 189, tanggal: "2026-03-30", warga: ["Hendra Wijaya",   "Dodi Kurniawan", "Joko Purnomo"],    shift: "21.00–03.00" },
+      { id: 190, tanggal: "2026-03-31", warga: ["Eko Prasetyo",    "Irwan Setiawan", "Krisna Mahendra"], shift: "21.00–03.00" },
+      // ===== APRIL 2026 (30 hari) =====
+      { id: 191, tanggal: "2026-04-01", warga: ["Gunawan Susanto", "Hadi Sumarno",   "Budi Santoso"],    shift: "21.00–03.00" },
+      { id: 192, tanggal: "2026-04-02", warga: ["Agus Priyono",    "Slamet Riyadi",  "Fajar Nugroho"],   shift: "21.00–03.00" },
+      { id: 193, tanggal: "2026-04-03", warga: ["Hendra Wijaya",   "Dodi Kurniawan", "Joko Purnomo"],    shift: "21.00–03.00" },
+      { id: 194, tanggal: "2026-04-04", warga: ["Eko Prasetyo",    "Irwan Setiawan", "Krisna Mahendra"], shift: "21.00–03.00" },
+      { id: 195, tanggal: "2026-04-05", warga: ["Hadi Sumarno",    "Budi Santoso",   "Gunawan Susanto"], shift: "21.00–03.00" },
+      { id: 196, tanggal: "2026-04-06", warga: ["Agus Priyono",    "Fajar Nugroho",  "Slamet Riyadi"],   shift: "21.00–03.00" },
+      { id: 197, tanggal: "2026-04-07", warga: ["Hendra Wijaya",   "Joko Purnomo",   "Dodi Kurniawan"],  shift: "21.00–03.00" },
+      { id: 198, tanggal: "2026-04-08", warga: ["Eko Prasetyo",    "Krisna Mahendra","Irwan Setiawan"],  shift: "21.00–03.00" },
+      { id: 199, tanggal: "2026-04-09", warga: ["Gunawan Susanto", "Hadi Sumarno",   "Budi Santoso"],    shift: "21.00–03.00" },
+      { id: 200, tanggal: "2026-04-10", warga: ["Agus Priyono",    "Slamet Riyadi",  "Fajar Nugroho"],   shift: "21.00–03.00" },
+      { id: 201, tanggal: "2026-04-11", warga: ["Hendra Wijaya",   "Dodi Kurniawan", "Joko Purnomo"],    shift: "21.00–03.00" },
+      { id: 202, tanggal: "2026-04-12", warga: ["Eko Prasetyo",    "Irwan Setiawan", "Krisna Mahendra"], shift: "21.00–03.00" },
+      { id: 203, tanggal: "2026-04-13", warga: ["Hadi Sumarno",    "Budi Santoso",   "Gunawan Susanto"], shift: "21.00–03.00" },
+      { id: 204, tanggal: "2026-04-14", warga: ["Budi Santoso",    "Agus Priyono",   "Hendra Wijaya"],   shift: "21.00–03.00" },
+      { id: 205, tanggal: "2026-04-15", warga: ["Slamet Riyadi",   "Dodi Kurniawan", "Eko Prasetyo"],    shift: "21.00–03.00" },
+      { id: 206, tanggal: "2026-04-16", warga: ["Fajar Nugroho",   "Gunawan Susanto","Hadi Sumarno"],    shift: "21.00–03.00" },
+      { id: 207, tanggal: "2026-04-17", warga: ["Irwan Setiawan",  "Joko Purnomo",   "Krisna Mahendra"], shift: "21.00–03.00" },
+      { id: 208, tanggal: "2026-04-18", warga: ["Budi Santoso",    "Slamet Riyadi",  "Fajar Nugroho"],   shift: "21.00–03.00" },
+      { id: 209, tanggal: "2026-04-19", warga: ["Agus Priyono",    "Dodi Kurniawan", "Gunawan Susanto"], shift: "21.00–03.00" },
+      { id: 210, tanggal: "2026-04-20", warga: ["Hendra Wijaya",   "Eko Prasetyo",   "Hadi Sumarno"],    shift: "21.00–03.00" },
+      { id: 211, tanggal: "2026-04-21", warga: ["Irwan Setiawan",  "Budi Santoso",   "Krisna Mahendra"], shift: "21.00–03.00" },
+      { id: 212, tanggal: "2026-04-22", warga: ["Joko Purnomo",    "Agus Priyono",   "Slamet Riyadi"],   shift: "21.00–03.00" },
+      { id: 213, tanggal: "2026-04-23", warga: ["Fajar Nugroho",   "Dodi Kurniawan", "Hendra Wijaya"],   shift: "21.00–03.00" },
+      { id: 214, tanggal: "2026-04-24", warga: ["Eko Prasetyo",    "Gunawan Susanto","Irwan Setiawan"],  shift: "21.00–03.00" },
+      { id: 215, tanggal: "2026-04-25", warga: ["Hadi Sumarno",    "Krisna Mahendra","Budi Santoso"],    shift: "21.00–03.00" },
+      { id: 216, tanggal: "2026-04-26", warga: ["Agus Priyono",    "Slamet Riyadi",  "Fajar Nugroho"],   shift: "21.00–03.00" },
+      { id: 217, tanggal: "2026-04-27", warga: ["Hendra Wijaya",   "Dodi Kurniawan", "Joko Purnomo"],    shift: "21.00–03.00" },
+      { id: 218, tanggal: "2026-04-28", warga: ["Eko Prasetyo",    "Irwan Setiawan", "Krisna Mahendra"], shift: "21.00–03.00" },
+      { id: 219, tanggal: "2026-04-29", warga: ["Gunawan Susanto", "Hadi Sumarno",   "Budi Santoso"],    shift: "21.00–03.00" },
+      { id: 220, tanggal: "2026-04-30", warga: ["Agus Priyono",    "Slamet Riyadi",  "Fajar Nugroho"],   shift: "21.00–03.00" },
+      // ===== MEI 2026 (31 hari) =====
+      { id: 221, tanggal: "2026-05-01", warga: ["Hendra Wijaya",   "Dodi Kurniawan", "Joko Purnomo"],    shift: "21.00–03.00" },
+      { id: 222, tanggal: "2026-05-02", warga: ["Eko Prasetyo",    "Irwan Setiawan", "Krisna Mahendra"], shift: "21.00–03.00" },
+      { id: 223, tanggal: "2026-05-03", warga: ["Hadi Sumarno",    "Budi Santoso",   "Gunawan Susanto"], shift: "21.00–03.00" },
+      { id: 224, tanggal: "2026-05-04", warga: ["Agus Priyono",    "Fajar Nugroho",  "Slamet Riyadi"],   shift: "21.00–03.00" },
+      { id: 225, tanggal: "2026-05-05", warga: ["Hendra Wijaya",   "Joko Purnomo",   "Dodi Kurniawan"],  shift: "21.00–03.00" },
+      { id: 226, tanggal: "2026-05-06", warga: ["Eko Prasetyo",    "Krisna Mahendra","Irwan Setiawan"],  shift: "21.00–03.00" },
+      { id: 227, tanggal: "2026-05-07", warga: ["Gunawan Susanto", "Hadi Sumarno",   "Budi Santoso"],    shift: "21.00–03.00" },
+      { id: 228, tanggal: "2026-05-08", warga: ["Agus Priyono",    "Slamet Riyadi",  "Fajar Nugroho"],   shift: "21.00–03.00" },
+      { id: 229, tanggal: "2026-05-09", warga: ["Hendra Wijaya",   "Dodi Kurniawan", "Joko Purnomo"],    shift: "21.00–03.00" },
+      { id: 230, tanggal: "2026-05-10", warga: ["Eko Prasetyo",    "Irwan Setiawan", "Krisna Mahendra"], shift: "21.00–03.00" },
+      { id: 231, tanggal: "2026-05-11", warga: ["Hadi Sumarno",    "Budi Santoso",   "Gunawan Susanto"], shift: "21.00–03.00" },
+      { id: 232, tanggal: "2026-05-12", warga: ["Budi Santoso",    "Agus Priyono",   "Hendra Wijaya"],   shift: "21.00–03.00" },
+      { id: 233, tanggal: "2026-05-13", warga: ["Slamet Riyadi",   "Dodi Kurniawan", "Eko Prasetyo"],    shift: "21.00–03.00" },
+      { id: 234, tanggal: "2026-05-14", warga: ["Fajar Nugroho",   "Gunawan Susanto","Hadi Sumarno"],    shift: "21.00–03.00" },
+      { id: 235, tanggal: "2026-05-15", warga: ["Irwan Setiawan",  "Joko Purnomo",   "Krisna Mahendra"], shift: "21.00–03.00" },
+      { id: 236, tanggal: "2026-05-16", warga: ["Budi Santoso",    "Slamet Riyadi",  "Fajar Nugroho"],   shift: "21.00–03.00" },
+      { id: 237, tanggal: "2026-05-17", warga: ["Agus Priyono",    "Dodi Kurniawan", "Gunawan Susanto"], shift: "21.00–03.00" },
+      { id: 238, tanggal: "2026-05-18", warga: ["Hendra Wijaya",   "Eko Prasetyo",   "Hadi Sumarno"],    shift: "21.00–03.00" },
+      { id: 239, tanggal: "2026-05-19", warga: ["Irwan Setiawan",  "Budi Santoso",   "Krisna Mahendra"], shift: "21.00–03.00" },
+      { id: 240, tanggal: "2026-05-20", warga: ["Joko Purnomo",    "Agus Priyono",   "Slamet Riyadi"],   shift: "21.00–03.00" },
+      { id: 241, tanggal: "2026-05-21", warga: ["Fajar Nugroho",   "Dodi Kurniawan", "Hendra Wijaya"],   shift: "21.00–03.00" },
+      { id: 242, tanggal: "2026-05-22", warga: ["Eko Prasetyo",    "Gunawan Susanto","Irwan Setiawan"],  shift: "21.00–03.00" },
+      { id: 243, tanggal: "2026-05-23", warga: ["Hadi Sumarno",    "Krisna Mahendra","Budi Santoso"],    shift: "21.00–03.00" },
+      { id: 244, tanggal: "2026-05-24", warga: ["Agus Priyono",    "Slamet Riyadi",  "Fajar Nugroho"],   shift: "21.00–03.00" },
+      { id: 245, tanggal: "2026-05-25", warga: ["Hendra Wijaya",   "Dodi Kurniawan", "Joko Purnomo"],    shift: "21.00–03.00" },
+      { id: 246, tanggal: "2026-05-26", warga: ["Eko Prasetyo",    "Irwan Setiawan", "Krisna Mahendra"], shift: "21.00–03.00" },
+      { id: 247, tanggal: "2026-05-27", warga: ["Gunawan Susanto", "Hadi Sumarno",   "Budi Santoso"],    shift: "21.00–03.00" },
+      { id: 248, tanggal: "2026-05-28", warga: ["Agus Priyono",    "Slamet Riyadi",  "Fajar Nugroho"],   shift: "21.00–03.00" },
+      { id: 249, tanggal: "2026-05-29", warga: ["Hendra Wijaya",   "Dodi Kurniawan", "Joko Purnomo"],    shift: "21.00–03.00" },
+      { id: 250, tanggal: "2026-05-30", warga: ["Eko Prasetyo",    "Krisna Mahendra","Irwan Setiawan"],  shift: "21.00–03.00" },
+      { id: 251, tanggal: "2026-05-31", warga: ["Hadi Sumarno",    "Budi Santoso",   "Gunawan Susanto"], shift: "21.00–03.00" },
+      // ===== JUNI 2026 (30 hari) =====
+      { id: 252, tanggal: "2026-06-01", warga: ["Agus Priyono",    "Fajar Nugroho",  "Slamet Riyadi"],   shift: "21.00–03.00" },
+      { id: 253, tanggal: "2026-06-02", warga: ["Hendra Wijaya",   "Joko Purnomo",   "Dodi Kurniawan"],  shift: "21.00–03.00" },
+      { id: 254, tanggal: "2026-06-03", warga: ["Eko Prasetyo",    "Krisna Mahendra","Irwan Setiawan"],  shift: "21.00–03.00" },
+      { id: 255, tanggal: "2026-06-04", warga: ["Gunawan Susanto", "Hadi Sumarno",   "Budi Santoso"],    shift: "21.00–03.00" },
+      { id: 256, tanggal: "2026-06-05", warga: ["Agus Priyono",    "Slamet Riyadi",  "Fajar Nugroho"],   shift: "21.00–03.00" },
+      { id: 257, tanggal: "2026-06-06", warga: ["Hendra Wijaya",   "Dodi Kurniawan", "Joko Purnomo"],    shift: "21.00–03.00" },
+      { id: 258, tanggal: "2026-06-07", warga: ["Eko Prasetyo",    "Irwan Setiawan", "Krisna Mahendra"], shift: "21.00–03.00" },
+      { id: 259, tanggal: "2026-06-08", warga: ["Hadi Sumarno",    "Budi Santoso",   "Gunawan Susanto"], shift: "21.00–03.00" },
+      { id: 260, tanggal: "2026-06-09", warga: ["Budi Santoso",    "Agus Priyono",   "Hendra Wijaya"],   shift: "21.00–03.00" },
+      { id: 261, tanggal: "2026-06-10", warga: ["Slamet Riyadi",   "Dodi Kurniawan", "Eko Prasetyo"],    shift: "21.00–03.00" },
+      { id: 262, tanggal: "2026-06-11", warga: ["Fajar Nugroho",   "Gunawan Susanto","Hadi Sumarno"],    shift: "21.00–03.00" },
+      { id: 263, tanggal: "2026-06-12", warga: ["Irwan Setiawan",  "Joko Purnomo",   "Krisna Mahendra"], shift: "21.00–03.00" },
+      { id: 264, tanggal: "2026-06-13", warga: ["Budi Santoso",    "Slamet Riyadi",  "Fajar Nugroho"],   shift: "21.00–03.00" },
+      { id: 265, tanggal: "2026-06-14", warga: ["Agus Priyono",    "Dodi Kurniawan", "Gunawan Susanto"], shift: "21.00–03.00" },
+      { id: 266, tanggal: "2026-06-15", warga: ["Hendra Wijaya",   "Eko Prasetyo",   "Hadi Sumarno"],    shift: "21.00–03.00" },
+      { id: 267, tanggal: "2026-06-16", warga: ["Irwan Setiawan",  "Budi Santoso",   "Krisna Mahendra"], shift: "21.00–03.00" },
+      { id: 268, tanggal: "2026-06-17", warga: ["Joko Purnomo",    "Agus Priyono",   "Slamet Riyadi"],   shift: "21.00–03.00" },
+      { id: 269, tanggal: "2026-06-18", warga: ["Fajar Nugroho",   "Dodi Kurniawan", "Hendra Wijaya"],   shift: "21.00–03.00" },
+      { id: 270, tanggal: "2026-06-19", warga: ["Eko Prasetyo",    "Gunawan Susanto","Irwan Setiawan"],  shift: "21.00–03.00" },
+      { id: 271, tanggal: "2026-06-20", warga: ["Hadi Sumarno",    "Krisna Mahendra","Budi Santoso"],    shift: "21.00–03.00" },
+      { id: 272, tanggal: "2026-06-21", warga: ["Agus Priyono",    "Slamet Riyadi",  "Fajar Nugroho"],   shift: "21.00–03.00" },
+      { id: 273, tanggal: "2026-06-22", warga: ["Hendra Wijaya",   "Dodi Kurniawan", "Joko Purnomo"],    shift: "21.00–03.00" },
+      { id: 274, tanggal: "2026-06-23", warga: ["Eko Prasetyo",    "Irwan Setiawan", "Krisna Mahendra"], shift: "21.00–03.00" },
+      { id: 275, tanggal: "2026-06-24", warga: ["Hadi Sumarno",    "Budi Santoso",   "Gunawan Susanto"], shift: "21.00–03.00" },
+      { id: 276, tanggal: "2026-06-25", warga: ["Agus Priyono",    "Fajar Nugroho",  "Slamet Riyadi"],   shift: "21.00–03.00" },
+      { id: 277, tanggal: "2026-06-26", warga: ["Hendra Wijaya",   "Joko Purnomo",   "Dodi Kurniawan"],  shift: "21.00–03.00" },
+      { id: 278, tanggal: "2026-06-27", warga: ["Eko Prasetyo",    "Krisna Mahendra","Irwan Setiawan"],  shift: "21.00–03.00" },
+      { id: 279, tanggal: "2026-06-28", warga: ["Gunawan Susanto", "Hadi Sumarno",   "Budi Santoso"],    shift: "21.00–03.00" },
+      { id: 280, tanggal: "2026-06-29", warga: ["Agus Priyono",    "Slamet Riyadi",  "Fajar Nugroho"],   shift: "21.00–03.00" },
+      { id: 281, tanggal: "2026-06-30", warga: ["Hendra Wijaya",   "Dodi Kurniawan", "Joko Purnomo"],    shift: "21.00–03.00" },
+      // ===== JULI 2026 (31 hari) =====
+      { id: 282, tanggal: "2026-07-01", warga: ["Eko Prasetyo",    "Irwan Setiawan", "Krisna Mahendra"], shift: "21.00–03.00" },
+      { id: 283, tanggal: "2026-07-02", warga: ["Hadi Sumarno",    "Budi Santoso",   "Gunawan Susanto"], shift: "21.00–03.00" },
+      { id: 284, tanggal: "2026-07-03", warga: ["Agus Priyono",    "Fajar Nugroho",  "Slamet Riyadi"],   shift: "21.00–03.00" },
+      { id: 285, tanggal: "2026-07-04", warga: ["Hendra Wijaya",   "Joko Purnomo",   "Dodi Kurniawan"],  shift: "21.00–03.00" },
+      { id: 286, tanggal: "2026-07-05", warga: ["Eko Prasetyo",    "Krisna Mahendra","Irwan Setiawan"],  shift: "21.00–03.00" },
+      { id: 287, tanggal: "2026-07-06", warga: ["Gunawan Susanto", "Hadi Sumarno",   "Budi Santoso"],    shift: "21.00–03.00" },
+      { id: 288, tanggal: "2026-07-07", warga: ["Agus Priyono",    "Slamet Riyadi",  "Fajar Nugroho"],   shift: "21.00–03.00" },
+      { id: 289, tanggal: "2026-07-08", warga: ["Hendra Wijaya",   "Dodi Kurniawan", "Joko Purnomo"],    shift: "21.00–03.00" },
+      { id: 290, tanggal: "2026-07-09", warga: ["Eko Prasetyo",    "Irwan Setiawan", "Krisna Mahendra"], shift: "21.00–03.00" },
+      { id: 291, tanggal: "2026-07-10", warga: ["Hadi Sumarno",    "Budi Santoso",   "Gunawan Susanto"], shift: "21.00–03.00" },
+      { id: 292, tanggal: "2026-07-11", warga: ["Budi Santoso",    "Agus Priyono",   "Hendra Wijaya"],   shift: "21.00–03.00" },
+      { id: 293, tanggal: "2026-07-12", warga: ["Slamet Riyadi",   "Dodi Kurniawan", "Eko Prasetyo"],    shift: "21.00–03.00" },
+      { id: 294, tanggal: "2026-07-13", warga: ["Fajar Nugroho",   "Gunawan Susanto","Hadi Sumarno"],    shift: "21.00–03.00" },
+      { id: 295, tanggal: "2026-07-14", warga: ["Irwan Setiawan",  "Joko Purnomo",   "Krisna Mahendra"], shift: "21.00–03.00" },
+      { id: 296, tanggal: "2026-07-15", warga: ["Budi Santoso",    "Slamet Riyadi",  "Fajar Nugroho"],   shift: "21.00–03.00" },
+      { id: 297, tanggal: "2026-07-16", warga: ["Agus Priyono",    "Dodi Kurniawan", "Gunawan Susanto"], shift: "21.00–03.00" },
+      { id: 298, tanggal: "2026-07-17", warga: ["Hendra Wijaya",   "Eko Prasetyo",   "Hadi Sumarno"],    shift: "21.00–03.00" },
+      { id: 299, tanggal: "2026-07-18", warga: ["Irwan Setiawan",  "Budi Santoso",   "Krisna Mahendra"], shift: "21.00–03.00" },
+      { id: 300, tanggal: "2026-07-19", warga: ["Joko Purnomo",    "Agus Priyono",   "Slamet Riyadi"],   shift: "21.00–03.00" },
+      { id: 301, tanggal: "2026-07-20", warga: ["Fajar Nugroho",   "Dodi Kurniawan", "Hendra Wijaya"],   shift: "21.00–03.00" },
+      { id: 302, tanggal: "2026-07-21", warga: ["Eko Prasetyo",    "Gunawan Susanto","Irwan Setiawan"],  shift: "21.00–03.00" },
+      { id: 303, tanggal: "2026-07-22", warga: ["Hadi Sumarno",    "Krisna Mahendra","Budi Santoso"],    shift: "21.00–03.00" },
+      { id: 304, tanggal: "2026-07-23", warga: ["Agus Priyono",    "Slamet Riyadi",  "Fajar Nugroho"],   shift: "21.00–03.00" },
+      { id: 305, tanggal: "2026-07-24", warga: ["Hendra Wijaya",   "Dodi Kurniawan", "Joko Purnomo"],    shift: "21.00–03.00" },
+      { id: 306, tanggal: "2026-07-25", warga: ["Eko Prasetyo",    "Irwan Setiawan", "Krisna Mahendra"], shift: "21.00–03.00" },
+      { id: 307, tanggal: "2026-07-26", warga: ["Hadi Sumarno",    "Budi Santoso",   "Gunawan Susanto"], shift: "21.00–03.00" },
+      { id: 308, tanggal: "2026-07-27", warga: ["Agus Priyono",    "Fajar Nugroho",  "Slamet Riyadi"],   shift: "21.00–03.00" },
+      { id: 309, tanggal: "2026-07-28", warga: ["Hendra Wijaya",   "Joko Purnomo",   "Dodi Kurniawan"],  shift: "21.00–03.00" },
+      { id: 310, tanggal: "2026-07-29", warga: ["Eko Prasetyo",    "Krisna Mahendra","Irwan Setiawan"],  shift: "21.00–03.00" },
+      { id: 311, tanggal: "2026-07-30", warga: ["Gunawan Susanto", "Hadi Sumarno",   "Budi Santoso"],    shift: "21.00–03.00" },
+      { id: 312, tanggal: "2026-07-31", warga: ["Agus Priyono",    "Slamet Riyadi",  "Fajar Nugroho"],   shift: "21.00–03.00" },
+      // ===== AGUSTUS 2026 (31 hari) =====
+      { id: 313, tanggal: "2026-08-01", warga: ["Hendra Wijaya",   "Dodi Kurniawan", "Joko Purnomo"],    shift: "21.00–03.00" },
+      { id: 314, tanggal: "2026-08-02", warga: ["Eko Prasetyo",    "Irwan Setiawan", "Krisna Mahendra"], shift: "21.00–03.00" },
+      { id: 315, tanggal: "2026-08-03", warga: ["Hadi Sumarno",    "Budi Santoso",   "Gunawan Susanto"], shift: "21.00–03.00" },
+      { id: 316, tanggal: "2026-08-04", warga: ["Agus Priyono",    "Fajar Nugroho",  "Slamet Riyadi"],   shift: "21.00–03.00" },
+      { id: 317, tanggal: "2026-08-05", warga: ["Hendra Wijaya",   "Joko Purnomo",   "Dodi Kurniawan"],  shift: "21.00–03.00" },
+      { id: 318, tanggal: "2026-08-06", warga: ["Eko Prasetyo",    "Krisna Mahendra","Irwan Setiawan"],  shift: "21.00–03.00" },
+      { id: 319, tanggal: "2026-08-07", warga: ["Gunawan Susanto", "Hadi Sumarno",   "Budi Santoso"],    shift: "21.00–03.00" },
+      { id: 320, tanggal: "2026-08-08", warga: ["Agus Priyono",    "Slamet Riyadi",  "Fajar Nugroho"],   shift: "21.00–03.00" },
+      { id: 321, tanggal: "2026-08-09", warga: ["Hendra Wijaya",   "Dodi Kurniawan", "Joko Purnomo"],    shift: "21.00–03.00" },
+      { id: 322, tanggal: "2026-08-10", warga: ["Eko Prasetyo",    "Irwan Setiawan", "Krisna Mahendra"], shift: "21.00–03.00" },
+      { id: 323, tanggal: "2026-08-11", warga: ["Hadi Sumarno",    "Budi Santoso",   "Gunawan Susanto"], shift: "21.00–03.00" },
+      { id: 324, tanggal: "2026-08-12", warga: ["Budi Santoso",    "Agus Priyono",   "Hendra Wijaya"],   shift: "21.00–03.00" },
+      { id: 325, tanggal: "2026-08-13", warga: ["Slamet Riyadi",   "Dodi Kurniawan", "Eko Prasetyo"],    shift: "21.00–03.00" },
+      { id: 326, tanggal: "2026-08-14", warga: ["Fajar Nugroho",   "Gunawan Susanto","Hadi Sumarno"],    shift: "21.00–03.00" },
+      { id: 327, tanggal: "2026-08-15", warga: ["Irwan Setiawan",  "Joko Purnomo",   "Krisna Mahendra"], shift: "21.00–03.00" },
+      { id: 328, tanggal: "2026-08-16", warga: ["Budi Santoso",    "Slamet Riyadi",  "Fajar Nugroho"],   shift: "21.00–03.00" },
+      { id: 329, tanggal: "2026-08-17", warga: ["Agus Priyono",    "Dodi Kurniawan", "Gunawan Susanto"], shift: "21.00–03.00" },
+      { id: 330, tanggal: "2026-08-18", warga: ["Hendra Wijaya",   "Eko Prasetyo",   "Hadi Sumarno"],    shift: "21.00–03.00" },
+      { id: 331, tanggal: "2026-08-19", warga: ["Irwan Setiawan",  "Budi Santoso",   "Krisna Mahendra"], shift: "21.00–03.00" },
+      { id: 332, tanggal: "2026-08-20", warga: ["Joko Purnomo",    "Agus Priyono",   "Slamet Riyadi"],   shift: "21.00–03.00" },
+      { id: 333, tanggal: "2026-08-21", warga: ["Fajar Nugroho",   "Dodi Kurniawan", "Hendra Wijaya"],   shift: "21.00–03.00" },
+      { id: 334, tanggal: "2026-08-22", warga: ["Eko Prasetyo",    "Gunawan Susanto","Irwan Setiawan"],  shift: "21.00–03.00" },
+      { id: 335, tanggal: "2026-08-23", warga: ["Hadi Sumarno",    "Krisna Mahendra","Budi Santoso"],    shift: "21.00–03.00" },
+      { id: 336, tanggal: "2026-08-24", warga: ["Agus Priyono",    "Slamet Riyadi",  "Fajar Nugroho"],   shift: "21.00–03.00" },
+      { id: 337, tanggal: "2026-08-25", warga: ["Hendra Wijaya",   "Dodi Kurniawan", "Joko Purnomo"],    shift: "21.00–03.00" },
+      { id: 338, tanggal: "2026-08-26", warga: ["Eko Prasetyo",    "Irwan Setiawan", "Krisna Mahendra"], shift: "21.00–03.00" },
+      { id: 339, tanggal: "2026-08-27", warga: ["Hadi Sumarno",    "Budi Santoso",   "Gunawan Susanto"], shift: "21.00–03.00" },
+      { id: 340, tanggal: "2026-08-28", warga: ["Agus Priyono",    "Fajar Nugroho",  "Slamet Riyadi"],   shift: "21.00–03.00" },
+      { id: 341, tanggal: "2026-08-29", warga: ["Hendra Wijaya",   "Joko Purnomo",   "Dodi Kurniawan"],  shift: "21.00–03.00" },
+      { id: 342, tanggal: "2026-08-30", warga: ["Eko Prasetyo",    "Krisna Mahendra","Irwan Setiawan"],  shift: "21.00–03.00" },
+      { id: 343, tanggal: "2026-08-31", warga: ["Gunawan Susanto", "Hadi Sumarno",   "Budi Santoso"],    shift: "21.00–03.00" },
+      // ===== SEPTEMBER 2026 (30 hari) =====
+      { id: 344, tanggal: "2026-09-01", warga: ["Agus Priyono",    "Slamet Riyadi",  "Fajar Nugroho"],   shift: "21.00–03.00" },
+      { id: 345, tanggal: "2026-09-02", warga: ["Hendra Wijaya",   "Dodi Kurniawan", "Joko Purnomo"],    shift: "21.00–03.00" },
+      { id: 346, tanggal: "2026-09-03", warga: ["Eko Prasetyo",    "Irwan Setiawan", "Krisna Mahendra"], shift: "21.00–03.00" },
+      { id: 347, tanggal: "2026-09-04", warga: ["Hadi Sumarno",    "Budi Santoso",   "Gunawan Susanto"], shift: "21.00–03.00" },
+      { id: 348, tanggal: "2026-09-05", warga: ["Agus Priyono",    "Fajar Nugroho",  "Slamet Riyadi"],   shift: "21.00–03.00" },
+      { id: 349, tanggal: "2026-09-06", warga: ["Hendra Wijaya",   "Joko Purnomo",   "Dodi Kurniawan"],  shift: "21.00–03.00" },
+      { id: 350, tanggal: "2026-09-07", warga: ["Eko Prasetyo",    "Krisna Mahendra","Irwan Setiawan"],  shift: "21.00–03.00" },
+      { id: 351, tanggal: "2026-09-08", warga: ["Gunawan Susanto", "Hadi Sumarno",   "Budi Santoso"],    shift: "21.00–03.00" },
+      { id: 352, tanggal: "2026-09-09", warga: ["Agus Priyono",    "Slamet Riyadi",  "Fajar Nugroho"],   shift: "21.00–03.00" },
+      { id: 353, tanggal: "2026-09-10", warga: ["Hendra Wijaya",   "Dodi Kurniawan", "Joko Purnomo"],    shift: "21.00–03.00" },
+      { id: 354, tanggal: "2026-09-11", warga: ["Eko Prasetyo",    "Irwan Setiawan", "Krisna Mahendra"], shift: "21.00–03.00" },
+      { id: 355, tanggal: "2026-09-12", warga: ["Hadi Sumarno",    "Budi Santoso",   "Gunawan Susanto"], shift: "21.00–03.00" },
+      { id: 356, tanggal: "2026-09-13", warga: ["Budi Santoso",    "Agus Priyono",   "Hendra Wijaya"],   shift: "21.00–03.00" },
+      { id: 357, tanggal: "2026-09-14", warga: ["Slamet Riyadi",   "Dodi Kurniawan", "Eko Prasetyo"],    shift: "21.00–03.00" },
+      { id: 358, tanggal: "2026-09-15", warga: ["Fajar Nugroho",   "Gunawan Susanto","Hadi Sumarno"],    shift: "21.00–03.00" },
+      { id: 359, tanggal: "2026-09-16", warga: ["Irwan Setiawan",  "Joko Purnomo",   "Krisna Mahendra"], shift: "21.00–03.00" },
+      { id: 360, tanggal: "2026-09-17", warga: ["Budi Santoso",    "Slamet Riyadi",  "Fajar Nugroho"],   shift: "21.00–03.00" },
+      { id: 361, tanggal: "2026-09-18", warga: ["Agus Priyono",    "Dodi Kurniawan", "Gunawan Susanto"], shift: "21.00–03.00" },
+      { id: 362, tanggal: "2026-09-19", warga: ["Hendra Wijaya",   "Eko Prasetyo",   "Hadi Sumarno"],    shift: "21.00–03.00" },
+      { id: 363, tanggal: "2026-09-20", warga: ["Irwan Setiawan",  "Budi Santoso",   "Krisna Mahendra"], shift: "21.00–03.00" },
+      { id: 364, tanggal: "2026-09-21", warga: ["Joko Purnomo",    "Agus Priyono",   "Slamet Riyadi"],   shift: "21.00–03.00" },
+      { id: 365, tanggal: "2026-09-22", warga: ["Fajar Nugroho",   "Dodi Kurniawan", "Hendra Wijaya"],   shift: "21.00–03.00" },
+      { id: 366, tanggal: "2026-09-23", warga: ["Eko Prasetyo",    "Gunawan Susanto","Irwan Setiawan"],  shift: "21.00–03.00" },
+      { id: 367, tanggal: "2026-09-24", warga: ["Hadi Sumarno",    "Krisna Mahendra","Budi Santoso"],    shift: "21.00–03.00" },
+      { id: 368, tanggal: "2026-09-25", warga: ["Agus Priyono",    "Slamet Riyadi",  "Fajar Nugroho"],   shift: "21.00–03.00" },
+      { id: 369, tanggal: "2026-09-26", warga: ["Hendra Wijaya",   "Dodi Kurniawan", "Joko Purnomo"],    shift: "21.00–03.00" },
+      { id: 370, tanggal: "2026-09-27", warga: ["Eko Prasetyo",    "Irwan Setiawan", "Krisna Mahendra"], shift: "21.00–03.00" },
+      { id: 371, tanggal: "2026-09-28", warga: ["Hadi Sumarno",    "Budi Santoso",   "Gunawan Susanto"], shift: "21.00–03.00" },
+      { id: 372, tanggal: "2026-09-29", warga: ["Agus Priyono",    "Fajar Nugroho",  "Slamet Riyadi"],   shift: "21.00–03.00" },
+      { id: 373, tanggal: "2026-09-30", warga: ["Hendra Wijaya",   "Joko Purnomo",   "Dodi Kurniawan"],  shift: "21.00–03.00" },
+      // ===== OKTOBER 2026 (31 hari) =====
+      { id: 374, tanggal: "2026-10-01", warga: ["Eko Prasetyo",    "Krisna Mahendra","Irwan Setiawan"],  shift: "21.00–03.00" },
+      { id: 375, tanggal: "2026-10-02", warga: ["Gunawan Susanto", "Hadi Sumarno",   "Budi Santoso"],    shift: "21.00–03.00" },
+      { id: 376, tanggal: "2026-10-03", warga: ["Agus Priyono",    "Slamet Riyadi",  "Fajar Nugroho"],   shift: "21.00–03.00" },
+      { id: 377, tanggal: "2026-10-04", warga: ["Hendra Wijaya",   "Dodi Kurniawan", "Joko Purnomo"],    shift: "21.00–03.00" },
+      { id: 378, tanggal: "2026-10-05", warga: ["Eko Prasetyo",    "Irwan Setiawan", "Krisna Mahendra"], shift: "21.00–03.00" },
+      { id: 379, tanggal: "2026-10-06", warga: ["Hadi Sumarno",    "Budi Santoso",   "Gunawan Susanto"], shift: "21.00–03.00" },
+      { id: 380, tanggal: "2026-10-07", warga: ["Agus Priyono",    "Fajar Nugroho",  "Slamet Riyadi"],   shift: "21.00–03.00" },
+      { id: 381, tanggal: "2026-10-08", warga: ["Hendra Wijaya",   "Joko Purnomo",   "Dodi Kurniawan"],  shift: "21.00–03.00" },
+      { id: 382, tanggal: "2026-10-09", warga: ["Eko Prasetyo",    "Krisna Mahendra","Irwan Setiawan"],  shift: "21.00–03.00" },
+      { id: 383, tanggal: "2026-10-10", warga: ["Gunawan Susanto", "Hadi Sumarno",   "Budi Santoso"],    shift: "21.00–03.00" },
+      { id: 384, tanggal: "2026-10-11", warga: ["Budi Santoso",    "Agus Priyono",   "Hendra Wijaya"],   shift: "21.00–03.00" },
+      { id: 385, tanggal: "2026-10-12", warga: ["Slamet Riyadi",   "Dodi Kurniawan", "Eko Prasetyo"],    shift: "21.00–03.00" },
+      { id: 386, tanggal: "2026-10-13", warga: ["Fajar Nugroho",   "Gunawan Susanto","Hadi Sumarno"],    shift: "21.00–03.00" },
+      { id: 387, tanggal: "2026-10-14", warga: ["Irwan Setiawan",  "Joko Purnomo",   "Krisna Mahendra"], shift: "21.00–03.00" },
+      { id: 388, tanggal: "2026-10-15", warga: ["Budi Santoso",    "Slamet Riyadi",  "Fajar Nugroho"],   shift: "21.00–03.00" },
+      { id: 389, tanggal: "2026-10-16", warga: ["Agus Priyono",    "Dodi Kurniawan", "Gunawan Susanto"], shift: "21.00–03.00" },
+      { id: 390, tanggal: "2026-10-17", warga: ["Hendra Wijaya",   "Eko Prasetyo",   "Hadi Sumarno"],    shift: "21.00–03.00" },
+      { id: 391, tanggal: "2026-10-18", warga: ["Irwan Setiawan",  "Budi Santoso",   "Krisna Mahendra"], shift: "21.00–03.00" },
+      { id: 392, tanggal: "2026-10-19", warga: ["Joko Purnomo",    "Agus Priyono",   "Slamet Riyadi"],   shift: "21.00–03.00" },
+      { id: 393, tanggal: "2026-10-20", warga: ["Fajar Nugroho",   "Dodi Kurniawan", "Hendra Wijaya"],   shift: "21.00–03.00" },
+      { id: 394, tanggal: "2026-10-21", warga: ["Eko Prasetyo",    "Gunawan Susanto","Irwan Setiawan"],  shift: "21.00–03.00" },
+      { id: 395, tanggal: "2026-10-22", warga: ["Hadi Sumarno",    "Krisna Mahendra","Budi Santoso"],    shift: "21.00–03.00" },
+      { id: 396, tanggal: "2026-10-23", warga: ["Agus Priyono",    "Slamet Riyadi",  "Fajar Nugroho"],   shift: "21.00–03.00" },
+      { id: 397, tanggal: "2026-10-24", warga: ["Hendra Wijaya",   "Dodi Kurniawan", "Joko Purnomo"],    shift: "21.00–03.00" },
+      { id: 398, tanggal: "2026-10-25", warga: ["Eko Prasetyo",    "Irwan Setiawan", "Krisna Mahendra"], shift: "21.00–03.00" },
+      { id: 399, tanggal: "2026-10-26", warga: ["Hadi Sumarno",    "Budi Santoso",   "Gunawan Susanto"], shift: "21.00–03.00" },
+      { id: 400, tanggal: "2026-10-27", warga: ["Agus Priyono",    "Fajar Nugroho",  "Slamet Riyadi"],   shift: "21.00–03.00" },
+      { id: 401, tanggal: "2026-10-28", warga: ["Hendra Wijaya",   "Joko Purnomo",   "Dodi Kurniawan"],  shift: "21.00–03.00" },
+      { id: 402, tanggal: "2026-10-29", warga: ["Eko Prasetyo",    "Krisna Mahendra","Irwan Setiawan"],  shift: "21.00–03.00" },
+      { id: 403, tanggal: "2026-10-30", warga: ["Gunawan Susanto", "Hadi Sumarno",   "Budi Santoso"],    shift: "21.00–03.00" },
+      { id: 404, tanggal: "2026-10-31", warga: ["Agus Priyono",    "Slamet Riyadi",  "Fajar Nugroho"],   shift: "21.00–03.00" },
+      // ===== NOVEMBER 2026 (30 hari) =====
+      { id: 405, tanggal: "2026-11-01", warga: ["Hendra Wijaya",   "Dodi Kurniawan", "Joko Purnomo"],    shift: "21.00–03.00" },
+      { id: 406, tanggal: "2026-11-02", warga: ["Eko Prasetyo",    "Irwan Setiawan", "Krisna Mahendra"], shift: "21.00–03.00" },
+      { id: 407, tanggal: "2026-11-03", warga: ["Hadi Sumarno",    "Budi Santoso",   "Gunawan Susanto"], shift: "21.00–03.00" },
+      { id: 408, tanggal: "2026-11-04", warga: ["Agus Priyono",    "Fajar Nugroho",  "Slamet Riyadi"],   shift: "21.00–03.00" },
+      { id: 409, tanggal: "2026-11-05", warga: ["Hendra Wijaya",   "Joko Purnomo",   "Dodi Kurniawan"],  shift: "21.00–03.00" },
+      { id: 410, tanggal: "2026-11-06", warga: ["Eko Prasetyo",    "Krisna Mahendra","Irwan Setiawan"],  shift: "21.00–03.00" },
+      { id: 411, tanggal: "2026-11-07", warga: ["Gunawan Susanto", "Hadi Sumarno",   "Budi Santoso"],    shift: "21.00–03.00" },
+      { id: 412, tanggal: "2026-11-08", warga: ["Agus Priyono",    "Slamet Riyadi",  "Fajar Nugroho"],   shift: "21.00–03.00" },
+      { id: 413, tanggal: "2026-11-09", warga: ["Hendra Wijaya",   "Dodi Kurniawan", "Joko Purnomo"],    shift: "21.00–03.00" },
+      { id: 414, tanggal: "2026-11-10", warga: ["Eko Prasetyo",    "Irwan Setiawan", "Krisna Mahendra"], shift: "21.00–03.00" },
+      { id: 415, tanggal: "2026-11-11", warga: ["Hadi Sumarno",    "Budi Santoso",   "Gunawan Susanto"], shift: "21.00–03.00" },
+      { id: 416, tanggal: "2026-11-12", warga: ["Budi Santoso",    "Agus Priyono",   "Hendra Wijaya"],   shift: "21.00–03.00" },
+      { id: 417, tanggal: "2026-11-13", warga: ["Slamet Riyadi",   "Dodi Kurniawan", "Eko Prasetyo"],    shift: "21.00–03.00" },
+      { id: 418, tanggal: "2026-11-14", warga: ["Fajar Nugroho",   "Gunawan Susanto","Hadi Sumarno"],    shift: "21.00–03.00" },
+      { id: 419, tanggal: "2026-11-15", warga: ["Irwan Setiawan",  "Joko Purnomo",   "Krisna Mahendra"], shift: "21.00–03.00" },
+      { id: 420, tanggal: "2026-11-16", warga: ["Budi Santoso",    "Slamet Riyadi",  "Fajar Nugroho"],   shift: "21.00–03.00" },
+      { id: 421, tanggal: "2026-11-17", warga: ["Agus Priyono",    "Dodi Kurniawan", "Gunawan Susanto"], shift: "21.00–03.00" },
+      { id: 422, tanggal: "2026-11-18", warga: ["Hendra Wijaya",   "Eko Prasetyo",   "Hadi Sumarno"],    shift: "21.00–03.00" },
+      { id: 423, tanggal: "2026-11-19", warga: ["Irwan Setiawan",  "Budi Santoso",   "Krisna Mahendra"], shift: "21.00–03.00" },
+      { id: 424, tanggal: "2026-11-20", warga: ["Joko Purnomo",    "Agus Priyono",   "Slamet Riyadi"],   shift: "21.00–03.00" },
+      { id: 425, tanggal: "2026-11-21", warga: ["Fajar Nugroho",   "Dodi Kurniawan", "Hendra Wijaya"],   shift: "21.00–03.00" },
+      { id: 426, tanggal: "2026-11-22", warga: ["Eko Prasetyo",    "Gunawan Susanto","Irwan Setiawan"],  shift: "21.00–03.00" },
+      { id: 427, tanggal: "2026-11-23", warga: ["Hadi Sumarno",    "Krisna Mahendra","Budi Santoso"],    shift: "21.00–03.00" },
+      { id: 428, tanggal: "2026-11-24", warga: ["Agus Priyono",    "Slamet Riyadi",  "Fajar Nugroho"],   shift: "21.00–03.00" },
+      { id: 429, tanggal: "2026-11-25", warga: ["Hendra Wijaya",   "Dodi Kurniawan", "Joko Purnomo"],    shift: "21.00–03.00" },
+      { id: 430, tanggal: "2026-11-26", warga: ["Eko Prasetyo",    "Irwan Setiawan", "Krisna Mahendra"], shift: "21.00–03.00" },
+      { id: 431, tanggal: "2026-11-27", warga: ["Hadi Sumarno",    "Budi Santoso",   "Gunawan Susanto"], shift: "21.00–03.00" },
+      { id: 432, tanggal: "2026-11-28", warga: ["Agus Priyono",    "Fajar Nugroho",  "Slamet Riyadi"],   shift: "21.00–03.00" },
+      { id: 433, tanggal: "2026-11-29", warga: ["Hendra Wijaya",   "Joko Purnomo",   "Dodi Kurniawan"],  shift: "21.00–03.00" },
+      { id: 434, tanggal: "2026-11-30", warga: ["Eko Prasetyo",    "Krisna Mahendra","Irwan Setiawan"],  shift: "21.00–03.00" },
+      // ===== DESEMBER 2026 (31 hari) =====
+      { id:  1, tanggal: "2026-12-01", warga: ["Budi Santoso",    "Agus Priyono",   "Hendra Wijaya"],   shift: "21.00–03.00" },
+      { id:  2, tanggal: "2026-12-02", warga: ["Slamet Riyadi",   "Dodi Kurniawan", "Eko Prasetyo"],    shift: "21.00–03.00" },
+      { id:  3, tanggal: "2026-12-03", warga: ["Fajar Nugroho",   "Gunawan Susanto","Hadi Sumarno"],    shift: "21.00–03.00" },
+      { id:  4, tanggal: "2026-12-04", warga: ["Irwan Setiawan",  "Joko Purnomo",   "Krisna Mahendra"], shift: "21.00–03.00" },
+      { id:  5, tanggal: "2026-12-05", warga: ["Budi Santoso",    "Slamet Riyadi",  "Fajar Nugroho"],   shift: "21.00–03.00" },
+      { id:  6, tanggal: "2026-12-06", warga: ["Agus Priyono",    "Dodi Kurniawan", "Gunawan Susanto"], shift: "21.00–03.00" },
+      { id:  7, tanggal: "2026-12-07", warga: ["Hendra Wijaya",   "Eko Prasetyo",   "Hadi Sumarno"],    shift: "21.00–03.00" },
+      { id:  8, tanggal: "2026-12-08", warga: ["Irwan Setiawan",  "Budi Santoso",   "Krisna Mahendra"], shift: "21.00–03.00" },
+      { id:  9, tanggal: "2026-12-09", warga: ["Joko Purnomo",    "Agus Priyono",   "Slamet Riyadi"],   shift: "21.00–03.00" },
+      { id: 10, tanggal: "2026-12-10", warga: ["Fajar Nugroho",   "Dodi Kurniawan", "Hendra Wijaya"],   shift: "21.00–03.00" },
+      { id: 11, tanggal: "2026-12-11", warga: ["Eko Prasetyo",    "Gunawan Susanto","Irwan Setiawan"],  shift: "21.00–03.00" },
+      { id: 12, tanggal: "2026-12-12", warga: ["Hadi Sumarno",    "Krisna Mahendra","Budi Santoso"],    shift: "21.00–03.00" },
+      { id: 13, tanggal: "2026-12-13", warga: ["Agus Priyono",    "Slamet Riyadi",  "Fajar Nugroho"],   shift: "21.00–03.00" },
+      { id: 14, tanggal: "2026-12-14", warga: ["Hendra Wijaya",   "Dodi Kurniawan", "Joko Purnomo"],    shift: "21.00–03.00" },
+      { id: 15, tanggal: "2026-12-15", warga: ["Eko Prasetyo",    "Irwan Setiawan", "Gunawan Susanto"], shift: "21.00–03.00" },
+      { id: 16, tanggal: "2026-12-16", warga: ["Hadi Sumarno",    "Budi Santoso",   "Krisna Mahendra"], shift: "21.00–03.00" },
+      { id: 17, tanggal: "2026-12-17", warga: ["Agus Priyono",    "Fajar Nugroho",  "Slamet Riyadi"],   shift: "21.00–03.00" },
+      { id: 18, tanggal: "2026-12-18", warga: ["Hendra Wijaya",   "Joko Purnomo",   "Dodi Kurniawan"],  shift: "21.00–03.00" },
+      { id: 19, tanggal: "2026-12-19", warga: ["Eko Prasetyo",    "Krisna Mahendra","Irwan Setiawan"],  shift: "21.00–03.00" },
+      { id: 20, tanggal: "2026-12-20", warga: ["Gunawan Susanto", "Hadi Sumarno",   "Budi Santoso"],    shift: "21.00–03.00" },
+      { id: 21, tanggal: "2026-12-21", warga: ["Agus Priyono",    "Slamet Riyadi",  "Fajar Nugroho"],   shift: "21.00–03.00" },
+      { id: 22, tanggal: "2026-12-22", warga: ["Hendra Wijaya",   "Dodi Kurniawan", "Joko Purnomo"],    shift: "21.00–03.00" },
+      { id: 23, tanggal: "2026-12-23", warga: ["Eko Prasetyo",    "Irwan Setiawan", "Krisna Mahendra"], shift: "21.00–03.00" },
+      { id: 24, tanggal: "2026-12-24", warga: ["Hadi Sumarno",    "Budi Santoso",   "Gunawan Susanto"], shift: "21.00–03.00" },
+      { id: 25, tanggal: "2026-12-25", warga: ["Agus Priyono",    "Fajar Nugroho",  "Slamet Riyadi"],   shift: "21.00–03.00" },
+      { id: 26, tanggal: "2026-12-26", warga: ["Hendra Wijaya",   "Joko Purnomo",   "Dodi Kurniawan"],  shift: "21.00–03.00" },
+      { id: 27, tanggal: "2026-12-27", warga: ["Eko Prasetyo",    "Krisna Mahendra","Irwan Setiawan"],  shift: "21.00–03.00" },
+      { id: 28, tanggal: "2026-12-28", warga: ["Gunawan Susanto", "Hadi Sumarno",   "Budi Santoso"],    shift: "21.00–03.00" },
+      { id: 29, tanggal: "2026-12-29", warga: ["Agus Priyono",    "Slamet Riyadi",  "Fajar Nugroho"],   shift: "21.00–03.00" },
+      { id: 30, tanggal: "2026-12-30", warga: ["Hendra Wijaya",   "Dodi Kurniawan", "Joko Purnomo"],    shift: "21.00–03.00" },
+      { id: 31, tanggal: "2026-12-31", warga: ["Eko Prasetyo",    "Irwan Setiawan", "Krisna Mahendra"], shift: "21.00–03.00" },
+      // ===== JANUARI 2027 (31 hari) =====
+      { id: 501, tanggal: "2027-01-01", warga: ["Budi Santoso",    "Agus Priyono",   "Hendra Wijaya"],   shift: "21.00–03.00" },
+      { id: 502, tanggal: "2027-01-02", warga: ["Slamet Riyadi",   "Dodi Kurniawan", "Eko Prasetyo"],    shift: "21.00–03.00" },
+      { id: 503, tanggal: "2027-01-03", warga: ["Fajar Nugroho",   "Gunawan Susanto","Hadi Sumarno"],    shift: "21.00–03.00" },
+      { id: 504, tanggal: "2027-01-04", warga: ["Irwan Setiawan",  "Joko Purnomo",   "Krisna Mahendra"], shift: "21.00–03.00" },
+      { id: 505, tanggal: "2027-01-05", warga: ["Budi Santoso",    "Slamet Riyadi",  "Fajar Nugroho"],   shift: "21.00–03.00" },
+      { id: 506, tanggal: "2027-01-06", warga: ["Agus Priyono",    "Dodi Kurniawan", "Gunawan Susanto"], shift: "21.00–03.00" },
+      { id: 507, tanggal: "2027-01-07", warga: ["Hendra Wijaya",   "Eko Prasetyo",   "Hadi Sumarno"],    shift: "21.00–03.00" },
+      { id: 508, tanggal: "2027-01-08", warga: ["Irwan Setiawan",  "Budi Santoso",   "Krisna Mahendra"], shift: "21.00–03.00" },
+      { id: 509, tanggal: "2027-01-09", warga: ["Joko Purnomo",    "Agus Priyono",   "Slamet Riyadi"],   shift: "21.00–03.00" },
+      { id: 510, tanggal: "2027-01-10", warga: ["Fajar Nugroho",   "Dodi Kurniawan", "Hendra Wijaya"],   shift: "21.00–03.00" },
+      { id: 511, tanggal: "2027-01-11", warga: ["Eko Prasetyo",    "Gunawan Susanto","Irwan Setiawan"],  shift: "21.00–03.00" },
+      { id: 512, tanggal: "2027-01-12", warga: ["Hadi Sumarno",    "Krisna Mahendra","Budi Santoso"],    shift: "21.00–03.00" },
+      { id: 513, tanggal: "2027-01-13", warga: ["Agus Priyono",    "Slamet Riyadi",  "Fajar Nugroho"],   shift: "21.00–03.00" },
+      { id: 514, tanggal: "2027-01-14", warga: ["Hendra Wijaya",   "Dodi Kurniawan", "Joko Purnomo"],    shift: "21.00–03.00" },
+      { id: 515, tanggal: "2027-01-15", warga: ["Eko Prasetyo",    "Irwan Setiawan", "Gunawan Susanto"], shift: "21.00–03.00" },
+      { id: 516, tanggal: "2027-01-16", warga: ["Hadi Sumarno",    "Budi Santoso",   "Krisna Mahendra"], shift: "21.00–03.00" },
+      { id: 517, tanggal: "2027-01-17", warga: ["Agus Priyono",    "Fajar Nugroho",  "Slamet Riyadi"],   shift: "21.00–03.00" },
+      { id: 518, tanggal: "2027-01-18", warga: ["Hendra Wijaya",   "Joko Purnomo",   "Dodi Kurniawan"],  shift: "21.00–03.00" },
+      { id: 519, tanggal: "2027-01-19", warga: ["Eko Prasetyo",    "Krisna Mahendra","Irwan Setiawan"],  shift: "21.00–03.00" },
+      { id: 520, tanggal: "2027-01-20", warga: ["Gunawan Susanto", "Hadi Sumarno",   "Budi Santoso"],    shift: "21.00–03.00" },
+      { id: 521, tanggal: "2027-01-21", warga: ["Agus Priyono",    "Slamet Riyadi",  "Fajar Nugroho"],   shift: "21.00–03.00" },
+      { id: 522, tanggal: "2027-01-22", warga: ["Hendra Wijaya",   "Dodi Kurniawan", "Joko Purnomo"],    shift: "21.00–03.00" },
+      { id: 523, tanggal: "2027-01-23", warga: ["Eko Prasetyo",    "Irwan Setiawan", "Krisna Mahendra"], shift: "21.00–03.00" },
+      { id: 524, tanggal: "2027-01-24", warga: ["Hadi Sumarno",    "Budi Santoso",   "Gunawan Susanto"], shift: "21.00–03.00" },
+      { id: 525, tanggal: "2027-01-25", warga: ["Agus Priyono",    "Fajar Nugroho",  "Slamet Riyadi"],   shift: "21.00–03.00" },
+      { id: 526, tanggal: "2027-01-26", warga: ["Hendra Wijaya",   "Joko Purnomo",   "Dodi Kurniawan"],  shift: "21.00–03.00" },
+      { id: 527, tanggal: "2027-01-27", warga: ["Eko Prasetyo",    "Krisna Mahendra","Irwan Setiawan"],  shift: "21.00–03.00" },
+      { id: 528, tanggal: "2027-01-28", warga: ["Gunawan Susanto", "Hadi Sumarno",   "Budi Santoso"],    shift: "21.00–03.00" },
+      { id: 529, tanggal: "2027-01-29", warga: ["Agus Priyono",    "Slamet Riyadi",  "Fajar Nugroho"],   shift: "21.00–03.00" },
+      { id: 530, tanggal: "2027-01-30", warga: ["Hendra Wijaya",   "Dodi Kurniawan", "Joko Purnomo"],    shift: "21.00–03.00" },
+      { id: 531, tanggal: "2027-01-31", warga: ["Eko Prasetyo",    "Irwan Setiawan", "Krisna Mahendra"], shift: "21.00–03.00" },
+      // ===== FEBRUARI 2027 (28 hari) =====
+      { id: 532, tanggal: "2027-02-01", warga: ["Budi Santoso",    "Agus Priyono",   "Hendra Wijaya"],   shift: "21.00–03.00" },
+      { id: 533, tanggal: "2027-02-02", warga: ["Slamet Riyadi",   "Dodi Kurniawan", "Eko Prasetyo"],    shift: "21.00–03.00" },
+      { id: 534, tanggal: "2027-02-03", warga: ["Fajar Nugroho",   "Gunawan Susanto","Hadi Sumarno"],    shift: "21.00–03.00" },
+      { id: 535, tanggal: "2027-02-04", warga: ["Irwan Setiawan",  "Joko Purnomo",   "Krisna Mahendra"], shift: "21.00–03.00" },
+      { id: 536, tanggal: "2027-02-05", warga: ["Budi Santoso",    "Slamet Riyadi",  "Fajar Nugroho"],   shift: "21.00–03.00" },
+      { id: 537, tanggal: "2027-02-06", warga: ["Agus Priyono",    "Dodi Kurniawan", "Gunawan Susanto"], shift: "21.00–03.00" },
+      { id: 538, tanggal: "2027-02-07", warga: ["Hendra Wijaya",   "Eko Prasetyo",   "Hadi Sumarno"],    shift: "21.00–03.00" },
+      { id: 539, tanggal: "2027-02-08", warga: ["Irwan Setiawan",  "Budi Santoso",   "Krisna Mahendra"], shift: "21.00–03.00" },
+      { id: 540, tanggal: "2027-02-09", warga: ["Joko Purnomo",    "Agus Priyono",   "Slamet Riyadi"],   shift: "21.00–03.00" },
+      { id: 541, tanggal: "2027-02-10", warga: ["Fajar Nugroho",   "Dodi Kurniawan", "Hendra Wijaya"],   shift: "21.00–03.00" },
+      { id: 542, tanggal: "2027-02-11", warga: ["Eko Prasetyo",    "Gunawan Susanto","Irwan Setiawan"],  shift: "21.00–03.00" },
+      { id: 543, tanggal: "2027-02-12", warga: ["Hadi Sumarno",    "Krisna Mahendra","Budi Santoso"],    shift: "21.00–03.00" },
+      { id: 544, tanggal: "2027-02-13", warga: ["Agus Priyono",    "Slamet Riyadi",  "Fajar Nugroho"],   shift: "21.00–03.00" },
+      { id: 545, tanggal: "2027-02-14", warga: ["Hendra Wijaya",   "Dodi Kurniawan", "Joko Purnomo"],    shift: "21.00–03.00" },
+      { id: 546, tanggal: "2027-02-15", warga: ["Eko Prasetyo",    "Irwan Setiawan", "Gunawan Susanto"], shift: "21.00–03.00" },
+      { id: 547, tanggal: "2027-02-16", warga: ["Hadi Sumarno",    "Budi Santoso",   "Krisna Mahendra"], shift: "21.00–03.00" },
+      { id: 548, tanggal: "2027-02-17", warga: ["Agus Priyono",    "Fajar Nugroho",  "Slamet Riyadi"],   shift: "21.00–03.00" },
+      { id: 549, tanggal: "2027-02-18", warga: ["Hendra Wijaya",   "Joko Purnomo",   "Dodi Kurniawan"],  shift: "21.00–03.00" },
+      { id: 550, tanggal: "2027-02-19", warga: ["Eko Prasetyo",    "Krisna Mahendra","Irwan Setiawan"],  shift: "21.00–03.00" },
+      { id: 551, tanggal: "2027-02-20", warga: ["Gunawan Susanto", "Hadi Sumarno",   "Budi Santoso"],    shift: "21.00–03.00" },
+      { id: 552, tanggal: "2027-02-21", warga: ["Agus Priyono",    "Slamet Riyadi",  "Fajar Nugroho"],   shift: "21.00–03.00" },
+      { id: 553, tanggal: "2027-02-22", warga: ["Hendra Wijaya",   "Dodi Kurniawan", "Joko Purnomo"],    shift: "21.00–03.00" },
+      { id: 554, tanggal: "2027-02-23", warga: ["Eko Prasetyo",    "Irwan Setiawan", "Krisna Mahendra"], shift: "21.00–03.00" },
+      { id: 555, tanggal: "2027-02-24", warga: ["Hadi Sumarno",    "Budi Santoso",   "Gunawan Susanto"], shift: "21.00–03.00" },
+      { id: 556, tanggal: "2027-02-25", warga: ["Agus Priyono",    "Fajar Nugroho",  "Slamet Riyadi"],   shift: "21.00–03.00" },
+      { id: 557, tanggal: "2027-02-26", warga: ["Hendra Wijaya",   "Joko Purnomo",   "Dodi Kurniawan"],  shift: "21.00–03.00" },
+      { id: 558, tanggal: "2027-02-27", warga: ["Eko Prasetyo",    "Krisna Mahendra","Irwan Setiawan"],  shift: "21.00–03.00" },
+      { id: 559, tanggal: "2027-02-28", warga: ["Gunawan Susanto", "Hadi Sumarno",   "Budi Santoso"],    shift: "21.00–03.00" },
+      // ===== MARET 2027 (31 hari) =====
+      { id: 560, tanggal: "2027-03-01", warga: ["Agus Priyono",    "Slamet Riyadi",  "Fajar Nugroho"],   shift: "21.00–03.00" },
+      { id: 561, tanggal: "2027-03-02", warga: ["Hendra Wijaya",   "Dodi Kurniawan", "Joko Purnomo"],    shift: "21.00–03.00" },
+      { id: 562, tanggal: "2027-03-03", warga: ["Eko Prasetyo",    "Irwan Setiawan", "Krisna Mahendra"], shift: "21.00–03.00" },
+      { id: 563, tanggal: "2027-03-04", warga: ["Hadi Sumarno",    "Budi Santoso",   "Gunawan Susanto"], shift: "21.00–03.00" },
+      { id: 564, tanggal: "2027-03-05", warga: ["Agus Priyono",    "Fajar Nugroho",  "Slamet Riyadi"],   shift: "21.00–03.00" },
+      { id: 565, tanggal: "2027-03-06", warga: ["Hendra Wijaya",   "Joko Purnomo",   "Dodi Kurniawan"],  shift: "21.00–03.00" },
+      { id: 566, tanggal: "2027-03-07", warga: ["Eko Prasetyo",    "Krisna Mahendra","Irwan Setiawan"],  shift: "21.00–03.00" },
+      { id: 567, tanggal: "2027-03-08", warga: ["Gunawan Susanto", "Hadi Sumarno",   "Budi Santoso"],    shift: "21.00–03.00" },
+      { id: 568, tanggal: "2027-03-09", warga: ["Agus Priyono",    "Slamet Riyadi",  "Fajar Nugroho"],   shift: "21.00–03.00" },
+      { id: 569, tanggal: "2027-03-10", warga: ["Hendra Wijaya",   "Dodi Kurniawan", "Joko Purnomo"],    shift: "21.00–03.00" },
+      { id: 570, tanggal: "2027-03-11", warga: ["Eko Prasetyo",    "Irwan Setiawan", "Krisna Mahendra"], shift: "21.00–03.00" },
+      { id: 571, tanggal: "2027-03-12", warga: ["Hadi Sumarno",    "Budi Santoso",   "Gunawan Susanto"], shift: "21.00–03.00" },
+      { id: 572, tanggal: "2027-03-13", warga: ["Agus Priyono",    "Fajar Nugroho",  "Slamet Riyadi"],   shift: "21.00–03.00" },
+      { id: 573, tanggal: "2027-03-14", warga: ["Hendra Wijaya",   "Joko Purnomo",   "Dodi Kurniawan"],  shift: "21.00–03.00" },
+      { id: 574, tanggal: "2027-03-15", warga: ["Eko Prasetyo",    "Krisna Mahendra","Irwan Setiawan"],  shift: "21.00–03.00" },
+      { id: 575, tanggal: "2027-03-16", warga: ["Gunawan Susanto", "Hadi Sumarno",   "Budi Santoso"],    shift: "21.00–03.00" },
+      { id: 576, tanggal: "2027-03-17", warga: ["Budi Santoso",    "Agus Priyono",   "Hendra Wijaya"],   shift: "21.00–03.00" },
+      { id: 577, tanggal: "2027-03-18", warga: ["Slamet Riyadi",   "Dodi Kurniawan", "Eko Prasetyo"],    shift: "21.00–03.00" },
+      { id: 578, tanggal: "2027-03-19", warga: ["Fajar Nugroho",   "Gunawan Susanto","Hadi Sumarno"],    shift: "21.00–03.00" },
+      { id: 579, tanggal: "2027-03-20", warga: ["Irwan Setiawan",  "Joko Purnomo",   "Krisna Mahendra"], shift: "21.00–03.00" },
+      { id: 580, tanggal: "2027-03-21", warga: ["Budi Santoso",    "Slamet Riyadi",  "Fajar Nugroho"],   shift: "21.00–03.00" },
+      { id: 581, tanggal: "2027-03-22", warga: ["Agus Priyono",    "Dodi Kurniawan", "Gunawan Susanto"], shift: "21.00–03.00" },
+      { id: 582, tanggal: "2027-03-23", warga: ["Hendra Wijaya",   "Eko Prasetyo",   "Hadi Sumarno"],    shift: "21.00–03.00" },
+      { id: 583, tanggal: "2027-03-24", warga: ["Irwan Setiawan",  "Budi Santoso",   "Krisna Mahendra"], shift: "21.00–03.00" },
+      { id: 584, tanggal: "2027-03-25", warga: ["Joko Purnomo",    "Agus Priyono",   "Slamet Riyadi"],   shift: "21.00–03.00" },
+      { id: 585, tanggal: "2027-03-26", warga: ["Fajar Nugroho",   "Dodi Kurniawan", "Hendra Wijaya"],   shift: "21.00–03.00" },
+      { id: 586, tanggal: "2027-03-27", warga: ["Eko Prasetyo",    "Gunawan Susanto","Irwan Setiawan"],  shift: "21.00–03.00" },
+      { id: 587, tanggal: "2027-03-28", warga: ["Hadi Sumarno",    "Krisna Mahendra","Budi Santoso"],    shift: "21.00–03.00" },
+      { id: 588, tanggal: "2027-03-29", warga: ["Agus Priyono",    "Slamet Riyadi",  "Fajar Nugroho"],   shift: "21.00–03.00" },
+      { id: 589, tanggal: "2027-03-30", warga: ["Hendra Wijaya",   "Dodi Kurniawan", "Joko Purnomo"],    shift: "21.00–03.00" },
+      { id: 590, tanggal: "2027-03-31", warga: ["Eko Prasetyo",    "Irwan Setiawan", "Krisna Mahendra"], shift: "21.00–03.00" },
+      // ===== APRIL 2027 (30 hari) =====
+      { id: 591, tanggal: "2027-04-01", warga: ["Gunawan Susanto", "Hadi Sumarno",   "Budi Santoso"],    shift: "21.00–03.00" },
+      { id: 592, tanggal: "2027-04-02", warga: ["Agus Priyono",    "Slamet Riyadi",  "Fajar Nugroho"],   shift: "21.00–03.00" },
+      { id: 593, tanggal: "2027-04-03", warga: ["Hendra Wijaya",   "Dodi Kurniawan", "Joko Purnomo"],    shift: "21.00–03.00" },
+      { id: 594, tanggal: "2027-04-04", warga: ["Eko Prasetyo",    "Irwan Setiawan", "Krisna Mahendra"], shift: "21.00–03.00" },
+      { id: 595, tanggal: "2027-04-05", warga: ["Hadi Sumarno",    "Budi Santoso",   "Gunawan Susanto"], shift: "21.00–03.00" },
+      { id: 596, tanggal: "2027-04-06", warga: ["Agus Priyono",    "Fajar Nugroho",  "Slamet Riyadi"],   shift: "21.00–03.00" },
+      { id: 597, tanggal: "2027-04-07", warga: ["Hendra Wijaya",   "Joko Purnomo",   "Dodi Kurniawan"],  shift: "21.00–03.00" },
+      { id: 598, tanggal: "2027-04-08", warga: ["Eko Prasetyo",    "Krisna Mahendra","Irwan Setiawan"],  shift: "21.00–03.00" },
+      { id: 599, tanggal: "2027-04-09", warga: ["Gunawan Susanto", "Hadi Sumarno",   "Budi Santoso"],    shift: "21.00–03.00" },
+      { id: 600, tanggal: "2027-04-10", warga: ["Agus Priyono",    "Slamet Riyadi",  "Fajar Nugroho"],   shift: "21.00–03.00" },
+      { id: 601, tanggal: "2027-04-11", warga: ["Hendra Wijaya",   "Dodi Kurniawan", "Joko Purnomo"],    shift: "21.00–03.00" },
+      { id: 602, tanggal: "2027-04-12", warga: ["Eko Prasetyo",    "Irwan Setiawan", "Krisna Mahendra"], shift: "21.00–03.00" },
+      { id: 603, tanggal: "2027-04-13", warga: ["Hadi Sumarno",    "Budi Santoso",   "Gunawan Susanto"], shift: "21.00–03.00" },
+      { id: 604, tanggal: "2027-04-14", warga: ["Budi Santoso",    "Agus Priyono",   "Hendra Wijaya"],   shift: "21.00–03.00" },
+      { id: 605, tanggal: "2027-04-15", warga: ["Slamet Riyadi",   "Dodi Kurniawan", "Eko Prasetyo"],    shift: "21.00–03.00" },
+      { id: 606, tanggal: "2027-04-16", warga: ["Fajar Nugroho",   "Gunawan Susanto","Hadi Sumarno"],    shift: "21.00–03.00" },
+      { id: 607, tanggal: "2027-04-17", warga: ["Irwan Setiawan",  "Joko Purnomo",   "Krisna Mahendra"], shift: "21.00–03.00" },
+      { id: 608, tanggal: "2027-04-18", warga: ["Budi Santoso",    "Slamet Riyadi",  "Fajar Nugroho"],   shift: "21.00–03.00" },
+      { id: 609, tanggal: "2027-04-19", warga: ["Agus Priyono",    "Dodi Kurniawan", "Gunawan Susanto"], shift: "21.00–03.00" },
+      { id: 610, tanggal: "2027-04-20", warga: ["Hendra Wijaya",   "Eko Prasetyo",   "Hadi Sumarno"],    shift: "21.00–03.00" },
+      { id: 611, tanggal: "2027-04-21", warga: ["Irwan Setiawan",  "Budi Santoso",   "Krisna Mahendra"], shift: "21.00–03.00" },
+      { id: 612, tanggal: "2027-04-22", warga: ["Joko Purnomo",    "Agus Priyono",   "Slamet Riyadi"],   shift: "21.00–03.00" },
+      { id: 613, tanggal: "2027-04-23", warga: ["Fajar Nugroho",   "Dodi Kurniawan", "Hendra Wijaya"],   shift: "21.00–03.00" },
+      { id: 614, tanggal: "2027-04-24", warga: ["Eko Prasetyo",    "Gunawan Susanto","Irwan Setiawan"],  shift: "21.00–03.00" },
+      { id: 615, tanggal: "2027-04-25", warga: ["Hadi Sumarno",    "Krisna Mahendra","Budi Santoso"],    shift: "21.00–03.00" },
+      { id: 616, tanggal: "2027-04-26", warga: ["Agus Priyono",    "Slamet Riyadi",  "Fajar Nugroho"],   shift: "21.00–03.00" },
+      { id: 617, tanggal: "2027-04-27", warga: ["Hendra Wijaya",   "Dodi Kurniawan", "Joko Purnomo"],    shift: "21.00–03.00" },
+      { id: 618, tanggal: "2027-04-28", warga: ["Eko Prasetyo",    "Irwan Setiawan", "Krisna Mahendra"], shift: "21.00–03.00" },
+      { id: 619, tanggal: "2027-04-29", warga: ["Gunawan Susanto", "Hadi Sumarno",   "Budi Santoso"],    shift: "21.00–03.00" },
+      { id: 620, tanggal: "2027-04-30", warga: ["Agus Priyono",    "Slamet Riyadi",  "Fajar Nugroho"],   shift: "21.00–03.00" },
+      // ===== MEI 2027 (31 hari) =====
+      { id: 621, tanggal: "2027-05-01", warga: ["Hendra Wijaya",   "Dodi Kurniawan", "Joko Purnomo"],    shift: "21.00–03.00" },
+      { id: 622, tanggal: "2027-05-02", warga: ["Eko Prasetyo",    "Irwan Setiawan", "Krisna Mahendra"], shift: "21.00–03.00" },
+      { id: 623, tanggal: "2027-05-03", warga: ["Hadi Sumarno",    "Budi Santoso",   "Gunawan Susanto"], shift: "21.00–03.00" },
+      { id: 624, tanggal: "2027-05-04", warga: ["Agus Priyono",    "Fajar Nugroho",  "Slamet Riyadi"],   shift: "21.00–03.00" },
+      { id: 625, tanggal: "2027-05-05", warga: ["Hendra Wijaya",   "Joko Purnomo",   "Dodi Kurniawan"],  shift: "21.00–03.00" },
+      { id: 626, tanggal: "2027-05-06", warga: ["Eko Prasetyo",    "Krisna Mahendra","Irwan Setiawan"],  shift: "21.00–03.00" },
+      { id: 627, tanggal: "2027-05-07", warga: ["Gunawan Susanto", "Hadi Sumarno",   "Budi Santoso"],    shift: "21.00–03.00" },
+      { id: 628, tanggal: "2027-05-08", warga: ["Agus Priyono",    "Slamet Riyadi",  "Fajar Nugroho"],   shift: "21.00–03.00" },
+      { id: 629, tanggal: "2027-05-09", warga: ["Hendra Wijaya",   "Dodi Kurniawan", "Joko Purnomo"],    shift: "21.00–03.00" },
+      { id: 630, tanggal: "2027-05-10", warga: ["Eko Prasetyo",    "Irwan Setiawan", "Krisna Mahendra"], shift: "21.00–03.00" },
+      { id: 631, tanggal: "2027-05-11", warga: ["Hadi Sumarno",    "Budi Santoso",   "Gunawan Susanto"], shift: "21.00–03.00" },
+      { id: 632, tanggal: "2027-05-12", warga: ["Budi Santoso",    "Agus Priyono",   "Hendra Wijaya"],   shift: "21.00–03.00" },
+      { id: 633, tanggal: "2027-05-13", warga: ["Slamet Riyadi",   "Dodi Kurniawan", "Eko Prasetyo"],    shift: "21.00–03.00" },
+      { id: 634, tanggal: "2027-05-14", warga: ["Fajar Nugroho",   "Gunawan Susanto","Hadi Sumarno"],    shift: "21.00–03.00" },
+      { id: 635, tanggal: "2027-05-15", warga: ["Irwan Setiawan",  "Joko Purnomo",   "Krisna Mahendra"], shift: "21.00–03.00" },
+      { id: 636, tanggal: "2027-05-16", warga: ["Budi Santoso",    "Slamet Riyadi",  "Fajar Nugroho"],   shift: "21.00–03.00" },
+      { id: 637, tanggal: "2027-05-17", warga: ["Agus Priyono",    "Dodi Kurniawan", "Gunawan Susanto"], shift: "21.00–03.00" },
+      { id: 638, tanggal: "2027-05-18", warga: ["Hendra Wijaya",   "Eko Prasetyo",   "Hadi Sumarno"],    shift: "21.00–03.00" },
+      { id: 639, tanggal: "2027-05-19", warga: ["Irwan Setiawan",  "Budi Santoso",   "Krisna Mahendra"], shift: "21.00–03.00" },
+      { id: 640, tanggal: "2027-05-20", warga: ["Joko Purnomo",    "Agus Priyono",   "Slamet Riyadi"],   shift: "21.00–03.00" },
+      { id: 641, tanggal: "2027-05-21", warga: ["Fajar Nugroho",   "Dodi Kurniawan", "Hendra Wijaya"],   shift: "21.00–03.00" },
+      { id: 642, tanggal: "2027-05-22", warga: ["Eko Prasetyo",    "Gunawan Susanto","Irwan Setiawan"],  shift: "21.00–03.00" },
+      { id: 643, tanggal: "2027-05-23", warga: ["Hadi Sumarno",    "Krisna Mahendra","Budi Santoso"],    shift: "21.00–03.00" },
+      { id: 644, tanggal: "2027-05-24", warga: ["Agus Priyono",    "Slamet Riyadi",  "Fajar Nugroho"],   shift: "21.00–03.00" },
+      { id: 645, tanggal: "2027-05-25", warga: ["Hendra Wijaya",   "Dodi Kurniawan", "Joko Purnomo"],    shift: "21.00–03.00" },
+      { id: 646, tanggal: "2027-05-26", warga: ["Eko Prasetyo",    "Irwan Setiawan", "Krisna Mahendra"], shift: "21.00–03.00" },
+      { id: 647, tanggal: "2027-05-27", warga: ["Gunawan Susanto", "Hadi Sumarno",   "Budi Santoso"],    shift: "21.00–03.00" },
+      { id: 648, tanggal: "2027-05-28", warga: ["Agus Priyono",    "Slamet Riyadi",  "Fajar Nugroho"],   shift: "21.00–03.00" },
+      { id: 649, tanggal: "2027-05-29", warga: ["Hendra Wijaya",   "Dodi Kurniawan", "Joko Purnomo"],    shift: "21.00–03.00" },
+      { id: 650, tanggal: "2027-05-30", warga: ["Eko Prasetyo",    "Krisna Mahendra","Irwan Setiawan"],  shift: "21.00–03.00" },
+      { id: 651, tanggal: "2027-05-31", warga: ["Hadi Sumarno",    "Budi Santoso",   "Gunawan Susanto"], shift: "21.00–03.00" },
+      // ===== JUNI 2027 (30 hari) =====
+      { id: 652, tanggal: "2027-06-01", warga: ["Agus Priyono",    "Fajar Nugroho",  "Slamet Riyadi"],   shift: "21.00–03.00" },
+      { id: 653, tanggal: "2027-06-02", warga: ["Hendra Wijaya",   "Joko Purnomo",   "Dodi Kurniawan"],  shift: "21.00–03.00" },
+      { id: 654, tanggal: "2027-06-03", warga: ["Eko Prasetyo",    "Krisna Mahendra","Irwan Setiawan"],  shift: "21.00–03.00" },
+      { id: 655, tanggal: "2027-06-04", warga: ["Gunawan Susanto", "Hadi Sumarno",   "Budi Santoso"],    shift: "21.00–03.00" },
+      { id: 656, tanggal: "2027-06-05", warga: ["Agus Priyono",    "Slamet Riyadi",  "Fajar Nugroho"],   shift: "21.00–03.00" },
+      { id: 657, tanggal: "2027-06-06", warga: ["Hendra Wijaya",   "Dodi Kurniawan", "Joko Purnomo"],    shift: "21.00–03.00" },
+      { id: 658, tanggal: "2027-06-07", warga: ["Eko Prasetyo",    "Irwan Setiawan", "Krisna Mahendra"], shift: "21.00–03.00" },
+      { id: 659, tanggal: "2027-06-08", warga: ["Hadi Sumarno",    "Budi Santoso",   "Gunawan Susanto"], shift: "21.00–03.00" },
+      { id: 660, tanggal: "2027-06-09", warga: ["Budi Santoso",    "Agus Priyono",   "Hendra Wijaya"],   shift: "21.00–03.00" },
+      { id: 661, tanggal: "2027-06-10", warga: ["Slamet Riyadi",   "Dodi Kurniawan", "Eko Prasetyo"],    shift: "21.00–03.00" },
+      { id: 662, tanggal: "2027-06-11", warga: ["Fajar Nugroho",   "Gunawan Susanto","Hadi Sumarno"],    shift: "21.00–03.00" },
+      { id: 663, tanggal: "2027-06-12", warga: ["Irwan Setiawan",  "Joko Purnomo",   "Krisna Mahendra"], shift: "21.00–03.00" },
+      { id: 664, tanggal: "2027-06-13", warga: ["Budi Santoso",    "Slamet Riyadi",  "Fajar Nugroho"],   shift: "21.00–03.00" },
+      { id: 665, tanggal: "2027-06-14", warga: ["Agus Priyono",    "Dodi Kurniawan", "Gunawan Susanto"], shift: "21.00–03.00" },
+      { id: 666, tanggal: "2027-06-15", warga: ["Hendra Wijaya",   "Eko Prasetyo",   "Hadi Sumarno"],    shift: "21.00–03.00" },
+      { id: 667, tanggal: "2027-06-16", warga: ["Irwan Setiawan",  "Budi Santoso",   "Krisna Mahendra"], shift: "21.00–03.00" },
+      { id: 668, tanggal: "2027-06-17", warga: ["Joko Purnomo",    "Agus Priyono",   "Slamet Riyadi"],   shift: "21.00–03.00" },
+      { id: 669, tanggal: "2027-06-18", warga: ["Fajar Nugroho",   "Dodi Kurniawan", "Hendra Wijaya"],   shift: "21.00–03.00" },
+      { id: 670, tanggal: "2027-06-19", warga: ["Eko Prasetyo",    "Gunawan Susanto","Irwan Setiawan"],  shift: "21.00–03.00" },
+      { id: 671, tanggal: "2027-06-20", warga: ["Hadi Sumarno",    "Krisna Mahendra","Budi Santoso"],    shift: "21.00–03.00" },
+      { id: 672, tanggal: "2027-06-21", warga: ["Agus Priyono",    "Slamet Riyadi",  "Fajar Nugroho"],   shift: "21.00–03.00" },
+      { id: 673, tanggal: "2027-06-22", warga: ["Hendra Wijaya",   "Dodi Kurniawan", "Joko Purnomo"],    shift: "21.00–03.00" },
+      { id: 674, tanggal: "2027-06-23", warga: ["Eko Prasetyo",    "Irwan Setiawan", "Krisna Mahendra"], shift: "21.00–03.00" },
+      { id: 675, tanggal: "2027-06-24", warga: ["Hadi Sumarno",    "Budi Santoso",   "Gunawan Susanto"], shift: "21.00–03.00" },
+      { id: 676, tanggal: "2027-06-25", warga: ["Agus Priyono",    "Fajar Nugroho",  "Slamet Riyadi"],   shift: "21.00–03.00" },
+      { id: 677, tanggal: "2027-06-26", warga: ["Hendra Wijaya",   "Joko Purnomo",   "Dodi Kurniawan"],  shift: "21.00–03.00" },
+      { id: 678, tanggal: "2027-06-27", warga: ["Eko Prasetyo",    "Krisna Mahendra","Irwan Setiawan"],  shift: "21.00–03.00" },
+      { id: 679, tanggal: "2027-06-28", warga: ["Gunawan Susanto", "Hadi Sumarno",   "Budi Santoso"],    shift: "21.00–03.00" },
+      { id: 680, tanggal: "2027-06-29", warga: ["Agus Priyono",    "Slamet Riyadi",  "Fajar Nugroho"],   shift: "21.00–03.00" },
+      { id: 681, tanggal: "2027-06-30", warga: ["Hendra Wijaya",   "Dodi Kurniawan", "Joko Purnomo"],    shift: "21.00–03.00" },
+      // ===== JULI 2027 (31 hari) =====
+      { id: 682, tanggal: "2027-07-01", warga: ["Eko Prasetyo",    "Irwan Setiawan", "Krisna Mahendra"], shift: "21.00–03.00" },
+      { id: 683, tanggal: "2027-07-02", warga: ["Hadi Sumarno",    "Budi Santoso",   "Gunawan Susanto"], shift: "21.00–03.00" },
+      { id: 684, tanggal: "2027-07-03", warga: ["Agus Priyono",    "Fajar Nugroho",  "Slamet Riyadi"],   shift: "21.00–03.00" },
+      { id: 685, tanggal: "2027-07-04", warga: ["Hendra Wijaya",   "Joko Purnomo",   "Dodi Kurniawan"],  shift: "21.00–03.00" },
+      { id: 686, tanggal: "2027-07-05", warga: ["Eko Prasetyo",    "Krisna Mahendra","Irwan Setiawan"],  shift: "21.00–03.00" },
+      { id: 687, tanggal: "2027-07-06", warga: ["Gunawan Susanto", "Hadi Sumarno",   "Budi Santoso"],    shift: "21.00–03.00" },
+      { id: 688, tanggal: "2027-07-07", warga: ["Agus Priyono",    "Slamet Riyadi",  "Fajar Nugroho"],   shift: "21.00–03.00" },
+      { id: 689, tanggal: "2027-07-08", warga: ["Hendra Wijaya",   "Dodi Kurniawan", "Joko Purnomo"],    shift: "21.00–03.00" },
+      { id: 690, tanggal: "2027-07-09", warga: ["Eko Prasetyo",    "Irwan Setiawan", "Krisna Mahendra"], shift: "21.00–03.00" },
+      { id: 691, tanggal: "2027-07-10", warga: ["Hadi Sumarno",    "Budi Santoso",   "Gunawan Susanto"], shift: "21.00–03.00" },
+      { id: 692, tanggal: "2027-07-11", warga: ["Budi Santoso",    "Agus Priyono",   "Hendra Wijaya"],   shift: "21.00–03.00" },
+      { id: 693, tanggal: "2027-07-12", warga: ["Slamet Riyadi",   "Dodi Kurniawan", "Eko Prasetyo"],    shift: "21.00–03.00" },
+      { id: 694, tanggal: "2027-07-13", warga: ["Fajar Nugroho",   "Gunawan Susanto","Hadi Sumarno"],    shift: "21.00–03.00" },
+      { id: 695, tanggal: "2027-07-14", warga: ["Irwan Setiawan",  "Joko Purnomo",   "Krisna Mahendra"], shift: "21.00–03.00" },
+      { id: 696, tanggal: "2027-07-15", warga: ["Budi Santoso",    "Slamet Riyadi",  "Fajar Nugroho"],   shift: "21.00–03.00" },
+      { id: 697, tanggal: "2027-07-16", warga: ["Agus Priyono",    "Dodi Kurniawan", "Gunawan Susanto"], shift: "21.00–03.00" },
+      { id: 698, tanggal: "2027-07-17", warga: ["Hendra Wijaya",   "Eko Prasetyo",   "Hadi Sumarno"],    shift: "21.00–03.00" },
+      { id: 699, tanggal: "2027-07-18", warga: ["Irwan Setiawan",  "Budi Santoso",   "Krisna Mahendra"], shift: "21.00–03.00" },
+      { id: 700, tanggal: "2027-07-19", warga: ["Joko Purnomo",    "Agus Priyono",   "Slamet Riyadi"],   shift: "21.00–03.00" },
+      { id: 701, tanggal: "2027-07-20", warga: ["Fajar Nugroho",   "Dodi Kurniawan", "Hendra Wijaya"],   shift: "21.00–03.00" },
+      { id: 702, tanggal: "2027-07-21", warga: ["Eko Prasetyo",    "Gunawan Susanto","Irwan Setiawan"],  shift: "21.00–03.00" },
+      { id: 703, tanggal: "2027-07-22", warga: ["Hadi Sumarno",    "Krisna Mahendra","Budi Santoso"],    shift: "21.00–03.00" },
+      { id: 704, tanggal: "2027-07-23", warga: ["Agus Priyono",    "Slamet Riyadi",  "Fajar Nugroho"],   shift: "21.00–03.00" },
+      { id: 705, tanggal: "2027-07-24", warga: ["Hendra Wijaya",   "Dodi Kurniawan", "Joko Purnomo"],    shift: "21.00–03.00" },
+      { id: 706, tanggal: "2027-07-25", warga: ["Eko Prasetyo",    "Irwan Setiawan", "Krisna Mahendra"], shift: "21.00–03.00" },
+      { id: 707, tanggal: "2027-07-26", warga: ["Hadi Sumarno",    "Budi Santoso",   "Gunawan Susanto"], shift: "21.00–03.00" },
+      { id: 708, tanggal: "2027-07-27", warga: ["Agus Priyono",    "Fajar Nugroho",  "Slamet Riyadi"],   shift: "21.00–03.00" },
+      { id: 709, tanggal: "2027-07-28", warga: ["Hendra Wijaya",   "Joko Purnomo",   "Dodi Kurniawan"],  shift: "21.00–03.00" },
+      { id: 710, tanggal: "2027-07-29", warga: ["Eko Prasetyo",    "Krisna Mahendra","Irwan Setiawan"],  shift: "21.00–03.00" },
+      { id: 711, tanggal: "2027-07-30", warga: ["Gunawan Susanto", "Hadi Sumarno",   "Budi Santoso"],    shift: "21.00–03.00" },
+      { id: 712, tanggal: "2027-07-31", warga: ["Agus Priyono",    "Slamet Riyadi",  "Fajar Nugroho"],   shift: "21.00–03.00" },
+      // ===== AGUSTUS 2027 (31 hari) =====
+      { id: 713, tanggal: "2027-08-01", warga: ["Hendra Wijaya",   "Dodi Kurniawan", "Joko Purnomo"],    shift: "21.00–03.00" },
+      { id: 714, tanggal: "2027-08-02", warga: ["Eko Prasetyo",    "Irwan Setiawan", "Krisna Mahendra"], shift: "21.00–03.00" },
+      { id: 715, tanggal: "2027-08-03", warga: ["Hadi Sumarno",    "Budi Santoso",   "Gunawan Susanto"], shift: "21.00–03.00" },
+      { id: 716, tanggal: "2027-08-04", warga: ["Agus Priyono",    "Fajar Nugroho",  "Slamet Riyadi"],   shift: "21.00–03.00" },
+      { id: 717, tanggal: "2027-08-05", warga: ["Hendra Wijaya",   "Joko Purnomo",   "Dodi Kurniawan"],  shift: "21.00–03.00" },
+      { id: 718, tanggal: "2027-08-06", warga: ["Eko Prasetyo",    "Krisna Mahendra","Irwan Setiawan"],  shift: "21.00–03.00" },
+      { id: 719, tanggal: "2027-08-07", warga: ["Gunawan Susanto", "Hadi Sumarno",   "Budi Santoso"],    shift: "21.00–03.00" },
+      { id: 720, tanggal: "2027-08-08", warga: ["Agus Priyono",    "Slamet Riyadi",  "Fajar Nugroho"],   shift: "21.00–03.00" },
+      { id: 721, tanggal: "2027-08-09", warga: ["Hendra Wijaya",   "Dodi Kurniawan", "Joko Purnomo"],    shift: "21.00–03.00" },
+      { id: 722, tanggal: "2027-08-10", warga: ["Eko Prasetyo",    "Irwan Setiawan", "Krisna Mahendra"], shift: "21.00–03.00" },
+      { id: 723, tanggal: "2027-08-11", warga: ["Hadi Sumarno",    "Budi Santoso",   "Gunawan Susanto"], shift: "21.00–03.00" },
+      { id: 724, tanggal: "2027-08-12", warga: ["Budi Santoso",    "Agus Priyono",   "Hendra Wijaya"],   shift: "21.00–03.00" },
+      { id: 725, tanggal: "2027-08-13", warga: ["Slamet Riyadi",   "Dodi Kurniawan", "Eko Prasetyo"],    shift: "21.00–03.00" },
+      { id: 726, tanggal: "2027-08-14", warga: ["Fajar Nugroho",   "Gunawan Susanto","Hadi Sumarno"],    shift: "21.00–03.00" },
+      { id: 727, tanggal: "2027-08-15", warga: ["Irwan Setiawan",  "Joko Purnomo",   "Krisna Mahendra"], shift: "21.00–03.00" },
+      { id: 728, tanggal: "2027-08-16", warga: ["Budi Santoso",    "Slamet Riyadi",  "Fajar Nugroho"],   shift: "21.00–03.00" },
+      { id: 729, tanggal: "2027-08-17", warga: ["Agus Priyono",    "Dodi Kurniawan", "Gunawan Susanto"], shift: "21.00–03.00" },
+      { id: 730, tanggal: "2027-08-18", warga: ["Hendra Wijaya",   "Eko Prasetyo",   "Hadi Sumarno"],    shift: "21.00–03.00" },
+      { id: 731, tanggal: "2027-08-19", warga: ["Irwan Setiawan",  "Budi Santoso",   "Krisna Mahendra"], shift: "21.00–03.00" },
+      { id: 732, tanggal: "2027-08-20", warga: ["Joko Purnomo",    "Agus Priyono",   "Slamet Riyadi"],   shift: "21.00–03.00" },
+      { id: 733, tanggal: "2027-08-21", warga: ["Fajar Nugroho",   "Dodi Kurniawan", "Hendra Wijaya"],   shift: "21.00–03.00" },
+      { id: 734, tanggal: "2027-08-22", warga: ["Eko Prasetyo",    "Gunawan Susanto","Irwan Setiawan"],  shift: "21.00–03.00" },
+      { id: 735, tanggal: "2027-08-23", warga: ["Hadi Sumarno",    "Krisna Mahendra","Budi Santoso"],    shift: "21.00–03.00" },
+      { id: 736, tanggal: "2027-08-24", warga: ["Agus Priyono",    "Slamet Riyadi",  "Fajar Nugroho"],   shift: "21.00–03.00" },
+      { id: 737, tanggal: "2027-08-25", warga: ["Hendra Wijaya",   "Dodi Kurniawan", "Joko Purnomo"],    shift: "21.00–03.00" },
+      { id: 738, tanggal: "2027-08-26", warga: ["Eko Prasetyo",    "Irwan Setiawan", "Krisna Mahendra"], shift: "21.00–03.00" },
+      { id: 739, tanggal: "2027-08-27", warga: ["Hadi Sumarno",    "Budi Santoso",   "Gunawan Susanto"], shift: "21.00–03.00" },
+      { id: 740, tanggal: "2027-08-28", warga: ["Agus Priyono",    "Fajar Nugroho",  "Slamet Riyadi"],   shift: "21.00–03.00" },
+      { id: 741, tanggal: "2027-08-29", warga: ["Hendra Wijaya",   "Joko Purnomo",   "Dodi Kurniawan"],  shift: "21.00–03.00" },
+      { id: 742, tanggal: "2027-08-30", warga: ["Eko Prasetyo",    "Krisna Mahendra","Irwan Setiawan"],  shift: "21.00–03.00" },
+      { id: 743, tanggal: "2027-08-31", warga: ["Gunawan Susanto", "Hadi Sumarno",   "Budi Santoso"],    shift: "21.00–03.00" },
+      // ===== SEPTEMBER 2027 (30 hari) =====
+      { id: 744, tanggal: "2027-09-01", warga: ["Agus Priyono",    "Slamet Riyadi",  "Fajar Nugroho"],   shift: "21.00–03.00" },
+      { id: 745, tanggal: "2027-09-02", warga: ["Hendra Wijaya",   "Dodi Kurniawan", "Joko Purnomo"],    shift: "21.00–03.00" },
+      { id: 746, tanggal: "2027-09-03", warga: ["Eko Prasetyo",    "Irwan Setiawan", "Krisna Mahendra"], shift: "21.00–03.00" },
+      { id: 747, tanggal: "2027-09-04", warga: ["Hadi Sumarno",    "Budi Santoso",   "Gunawan Susanto"], shift: "21.00–03.00" },
+      { id: 748, tanggal: "2027-09-05", warga: ["Agus Priyono",    "Fajar Nugroho",  "Slamet Riyadi"],   shift: "21.00–03.00" },
+      { id: 749, tanggal: "2027-09-06", warga: ["Hendra Wijaya",   "Joko Purnomo",   "Dodi Kurniawan"],  shift: "21.00–03.00" },
+      { id: 750, tanggal: "2027-09-07", warga: ["Eko Prasetyo",    "Krisna Mahendra","Irwan Setiawan"],  shift: "21.00–03.00" },
+      { id: 751, tanggal: "2027-09-08", warga: ["Gunawan Susanto", "Hadi Sumarno",   "Budi Santoso"],    shift: "21.00–03.00" },
+      { id: 752, tanggal: "2027-09-09", warga: ["Agus Priyono",    "Slamet Riyadi",  "Fajar Nugroho"],   shift: "21.00–03.00" },
+      { id: 753, tanggal: "2027-09-10", warga: ["Hendra Wijaya",   "Dodi Kurniawan", "Joko Purnomo"],    shift: "21.00–03.00" },
+      { id: 754, tanggal: "2027-09-11", warga: ["Eko Prasetyo",    "Irwan Setiawan", "Krisna Mahendra"], shift: "21.00–03.00" },
+      { id: 755, tanggal: "2027-09-12", warga: ["Hadi Sumarno",    "Budi Santoso",   "Gunawan Susanto"], shift: "21.00–03.00" },
+      { id: 756, tanggal: "2027-09-13", warga: ["Budi Santoso",    "Agus Priyono",   "Hendra Wijaya"],   shift: "21.00–03.00" },
+      { id: 757, tanggal: "2027-09-14", warga: ["Slamet Riyadi",   "Dodi Kurniawan", "Eko Prasetyo"],    shift: "21.00–03.00" },
+      { id: 758, tanggal: "2027-09-15", warga: ["Fajar Nugroho",   "Gunawan Susanto","Hadi Sumarno"],    shift: "21.00–03.00" },
+      { id: 759, tanggal: "2027-09-16", warga: ["Irwan Setiawan",  "Joko Purnomo",   "Krisna Mahendra"], shift: "21.00–03.00" },
+      { id: 760, tanggal: "2027-09-17", warga: ["Budi Santoso",    "Slamet Riyadi",  "Fajar Nugroho"],   shift: "21.00–03.00" },
+      { id: 761, tanggal: "2027-09-18", warga: ["Agus Priyono",    "Dodi Kurniawan", "Gunawan Susanto"], shift: "21.00–03.00" },
+      { id: 762, tanggal: "2027-09-19", warga: ["Hendra Wijaya",   "Eko Prasetyo",   "Hadi Sumarno"],    shift: "21.00–03.00" },
+      { id: 763, tanggal: "2027-09-20", warga: ["Irwan Setiawan",  "Budi Santoso",   "Krisna Mahendra"], shift: "21.00–03.00" },
+      { id: 764, tanggal: "2027-09-21", warga: ["Joko Purnomo",    "Agus Priyono",   "Slamet Riyadi"],   shift: "21.00–03.00" },
+      { id: 765, tanggal: "2027-09-22", warga: ["Fajar Nugroho",   "Dodi Kurniawan", "Hendra Wijaya"],   shift: "21.00–03.00" },
+      { id: 766, tanggal: "2027-09-23", warga: ["Eko Prasetyo",    "Gunawan Susanto","Irwan Setiawan"],  shift: "21.00–03.00" },
+      { id: 767, tanggal: "2027-09-24", warga: ["Hadi Sumarno",    "Krisna Mahendra","Budi Santoso"],    shift: "21.00–03.00" },
+      { id: 768, tanggal: "2027-09-25", warga: ["Agus Priyono",    "Slamet Riyadi",  "Fajar Nugroho"],   shift: "21.00–03.00" },
+      { id: 769, tanggal: "2027-09-26", warga: ["Hendra Wijaya",   "Dodi Kurniawan", "Joko Purnomo"],    shift: "21.00–03.00" },
+      { id: 770, tanggal: "2027-09-27", warga: ["Eko Prasetyo",    "Irwan Setiawan", "Krisna Mahendra"], shift: "21.00–03.00" },
+      { id: 771, tanggal: "2027-09-28", warga: ["Hadi Sumarno",    "Budi Santoso",   "Gunawan Susanto"], shift: "21.00–03.00" },
+      { id: 772, tanggal: "2027-09-29", warga: ["Agus Priyono",    "Fajar Nugroho",  "Slamet Riyadi"],   shift: "21.00–03.00" },
+      { id: 773, tanggal: "2027-09-30", warga: ["Hendra Wijaya",   "Joko Purnomo",   "Dodi Kurniawan"],  shift: "21.00–03.00" },
+      // ===== OKTOBER 2027 (31 hari) =====
+      { id: 774, tanggal: "2027-10-01", warga: ["Eko Prasetyo",    "Krisna Mahendra","Irwan Setiawan"],  shift: "21.00–03.00" },
+      { id: 775, tanggal: "2027-10-02", warga: ["Gunawan Susanto", "Hadi Sumarno",   "Budi Santoso"],    shift: "21.00–03.00" },
+      { id: 776, tanggal: "2027-10-03", warga: ["Agus Priyono",    "Slamet Riyadi",  "Fajar Nugroho"],   shift: "21.00–03.00" },
+      { id: 777, tanggal: "2027-10-04", warga: ["Hendra Wijaya",   "Dodi Kurniawan", "Joko Purnomo"],    shift: "21.00–03.00" },
+      { id: 778, tanggal: "2027-10-05", warga: ["Eko Prasetyo",    "Irwan Setiawan", "Krisna Mahendra"], shift: "21.00–03.00" },
+      { id: 779, tanggal: "2027-10-06", warga: ["Hadi Sumarno",    "Budi Santoso",   "Gunawan Susanto"], shift: "21.00–03.00" },
+      { id: 780, tanggal: "2027-10-07", warga: ["Agus Priyono",    "Fajar Nugroho",  "Slamet Riyadi"],   shift: "21.00–03.00" },
+      { id: 781, tanggal: "2027-10-08", warga: ["Hendra Wijaya",   "Joko Purnomo",   "Dodi Kurniawan"],  shift: "21.00–03.00" },
+      { id: 782, tanggal: "2027-10-09", warga: ["Eko Prasetyo",    "Krisna Mahendra","Irwan Setiawan"],  shift: "21.00–03.00" },
+      { id: 783, tanggal: "2027-10-10", warga: ["Gunawan Susanto", "Hadi Sumarno",   "Budi Santoso"],    shift: "21.00–03.00" },
+      { id: 784, tanggal: "2027-10-11", warga: ["Budi Santoso",    "Agus Priyono",   "Hendra Wijaya"],   shift: "21.00–03.00" },
+      { id: 785, tanggal: "2027-10-12", warga: ["Slamet Riyadi",   "Dodi Kurniawan", "Eko Prasetyo"],    shift: "21.00–03.00" },
+      { id: 786, tanggal: "2027-10-13", warga: ["Fajar Nugroho",   "Gunawan Susanto","Hadi Sumarno"],    shift: "21.00–03.00" },
+      { id: 787, tanggal: "2027-10-14", warga: ["Irwan Setiawan",  "Joko Purnomo",   "Krisna Mahendra"], shift: "21.00–03.00" },
+      { id: 788, tanggal: "2027-10-15", warga: ["Budi Santoso",    "Slamet Riyadi",  "Fajar Nugroho"],   shift: "21.00–03.00" },
+      { id: 789, tanggal: "2027-10-16", warga: ["Agus Priyono",    "Dodi Kurniawan", "Gunawan Susanto"], shift: "21.00–03.00" },
+      { id: 790, tanggal: "2027-10-17", warga: ["Hendra Wijaya",   "Eko Prasetyo",   "Hadi Sumarno"],    shift: "21.00–03.00" },
+      { id: 791, tanggal: "2027-10-18", warga: ["Irwan Setiawan",  "Budi Santoso",   "Krisna Mahendra"], shift: "21.00–03.00" },
+      { id: 792, tanggal: "2027-10-19", warga: ["Joko Purnomo",    "Agus Priyono",   "Slamet Riyadi"],   shift: "21.00–03.00" },
+      { id: 793, tanggal: "2027-10-20", warga: ["Fajar Nugroho",   "Dodi Kurniawan", "Hendra Wijaya"],   shift: "21.00–03.00" },
+      { id: 794, tanggal: "2027-10-21", warga: ["Eko Prasetyo",    "Gunawan Susanto","Irwan Setiawan"],  shift: "21.00–03.00" },
+      { id: 795, tanggal: "2027-10-22", warga: ["Hadi Sumarno",    "Krisna Mahendra","Budi Santoso"],    shift: "21.00–03.00" },
+      { id: 796, tanggal: "2027-10-23", warga: ["Agus Priyono",    "Slamet Riyadi",  "Fajar Nugroho"],   shift: "21.00–03.00" },
+      { id: 797, tanggal: "2027-10-24", warga: ["Hendra Wijaya",   "Dodi Kurniawan", "Joko Purnomo"],    shift: "21.00–03.00" },
+      { id: 798, tanggal: "2027-10-25", warga: ["Eko Prasetyo",    "Irwan Setiawan", "Krisna Mahendra"], shift: "21.00–03.00" },
+      { id: 799, tanggal: "2027-10-26", warga: ["Hadi Sumarno",    "Budi Santoso",   "Gunawan Susanto"], shift: "21.00–03.00" },
+      { id: 800, tanggal: "2027-10-27", warga: ["Agus Priyono",    "Fajar Nugroho",  "Slamet Riyadi"],   shift: "21.00–03.00" },
+      { id: 801, tanggal: "2027-10-28", warga: ["Hendra Wijaya",   "Joko Purnomo",   "Dodi Kurniawan"],  shift: "21.00–03.00" },
+      { id: 802, tanggal: "2027-10-29", warga: ["Eko Prasetyo",    "Krisna Mahendra","Irwan Setiawan"],  shift: "21.00–03.00" },
+      { id: 803, tanggal: "2027-10-30", warga: ["Gunawan Susanto", "Hadi Sumarno",   "Budi Santoso"],    shift: "21.00–03.00" },
+      { id: 804, tanggal: "2027-10-31", warga: ["Agus Priyono",    "Slamet Riyadi",  "Fajar Nugroho"],   shift: "21.00–03.00" },
+      // ===== NOVEMBER 2027 (30 hari) =====
+      { id: 805, tanggal: "2027-11-01", warga: ["Hendra Wijaya",   "Dodi Kurniawan", "Joko Purnomo"],    shift: "21.00–03.00" },
+      { id: 806, tanggal: "2027-11-02", warga: ["Eko Prasetyo",    "Irwan Setiawan", "Krisna Mahendra"], shift: "21.00–03.00" },
+      { id: 807, tanggal: "2027-11-03", warga: ["Hadi Sumarno",    "Budi Santoso",   "Gunawan Susanto"], shift: "21.00–03.00" },
+      { id: 808, tanggal: "2027-11-04", warga: ["Agus Priyono",    "Fajar Nugroho",  "Slamet Riyadi"],   shift: "21.00–03.00" },
+      { id: 809, tanggal: "2027-11-05", warga: ["Hendra Wijaya",   "Joko Purnomo",   "Dodi Kurniawan"],  shift: "21.00–03.00" },
+      { id: 810, tanggal: "2027-11-06", warga: ["Eko Prasetyo",    "Krisna Mahendra","Irwan Setiawan"],  shift: "21.00–03.00" },
+      { id: 811, tanggal: "2027-11-07", warga: ["Gunawan Susanto", "Hadi Sumarno",   "Budi Santoso"],    shift: "21.00–03.00" },
+      { id: 812, tanggal: "2027-11-08", warga: ["Agus Priyono",    "Slamet Riyadi",  "Fajar Nugroho"],   shift: "21.00–03.00" },
+      { id: 813, tanggal: "2027-11-09", warga: ["Hendra Wijaya",   "Dodi Kurniawan", "Joko Purnomo"],    shift: "21.00–03.00" },
+      { id: 814, tanggal: "2027-11-10", warga: ["Eko Prasetyo",    "Irwan Setiawan", "Krisna Mahendra"], shift: "21.00–03.00" },
+      { id: 815, tanggal: "2027-11-11", warga: ["Hadi Sumarno",    "Budi Santoso",   "Gunawan Susanto"], shift: "21.00–03.00" },
+      { id: 816, tanggal: "2027-11-12", warga: ["Budi Santoso",    "Agus Priyono",   "Hendra Wijaya"],   shift: "21.00–03.00" },
+      { id: 817, tanggal: "2027-11-13", warga: ["Slamet Riyadi",   "Dodi Kurniawan", "Eko Prasetyo"],    shift: "21.00–03.00" },
+      { id: 818, tanggal: "2027-11-14", warga: ["Fajar Nugroho",   "Gunawan Susanto","Hadi Sumarno"],    shift: "21.00–03.00" },
+      { id: 819, tanggal: "2027-11-15", warga: ["Irwan Setiawan",  "Joko Purnomo",   "Krisna Mahendra"], shift: "21.00–03.00" },
+      { id: 820, tanggal: "2027-11-16", warga: ["Budi Santoso",    "Slamet Riyadi",  "Fajar Nugroho"],   shift: "21.00–03.00" },
+      { id: 821, tanggal: "2027-11-17", warga: ["Agus Priyono",    "Dodi Kurniawan", "Gunawan Susanto"], shift: "21.00–03.00" },
+      { id: 822, tanggal: "2027-11-18", warga: ["Hendra Wijaya",   "Eko Prasetyo",   "Hadi Sumarno"],    shift: "21.00–03.00" },
+      { id: 823, tanggal: "2027-11-19", warga: ["Irwan Setiawan",  "Budi Santoso",   "Krisna Mahendra"], shift: "21.00–03.00" },
+      { id: 824, tanggal: "2027-11-20", warga: ["Joko Purnomo",    "Agus Priyono",   "Slamet Riyadi"],   shift: "21.00–03.00" },
+      { id: 825, tanggal: "2027-11-21", warga: ["Fajar Nugroho",   "Dodi Kurniawan", "Hendra Wijaya"],   shift: "21.00–03.00" },
+      { id: 826, tanggal: "2027-11-22", warga: ["Eko Prasetyo",    "Gunawan Susanto","Irwan Setiawan"],  shift: "21.00–03.00" },
+      { id: 827, tanggal: "2027-11-23", warga: ["Hadi Sumarno",    "Krisna Mahendra","Budi Santoso"],    shift: "21.00–03.00" },
+      { id: 828, tanggal: "2027-11-24", warga: ["Agus Priyono",    "Slamet Riyadi",  "Fajar Nugroho"],   shift: "21.00–03.00" },
+      { id: 829, tanggal: "2027-11-25", warga: ["Hendra Wijaya",   "Dodi Kurniawan", "Joko Purnomo"],    shift: "21.00–03.00" },
+      { id: 830, tanggal: "2027-11-26", warga: ["Eko Prasetyo",    "Irwan Setiawan", "Krisna Mahendra"], shift: "21.00–03.00" },
+      { id: 831, tanggal: "2027-11-27", warga: ["Hadi Sumarno",    "Budi Santoso",   "Gunawan Susanto"], shift: "21.00–03.00" },
+      { id: 832, tanggal: "2027-11-28", warga: ["Agus Priyono",    "Fajar Nugroho",  "Slamet Riyadi"],   shift: "21.00–03.00" },
+      { id: 833, tanggal: "2027-11-29", warga: ["Hendra Wijaya",   "Joko Purnomo",   "Dodi Kurniawan"],  shift: "21.00–03.00" },
+      { id: 834, tanggal: "2027-11-30", warga: ["Eko Prasetyo",    "Krisna Mahendra","Irwan Setiawan"],  shift: "21.00–03.00" },
+      // ===== DESEMBER 2027 (31 hari) =====
+      { id: 835, tanggal: "2027-12-01", warga: ["Budi Santoso",    "Agus Priyono",   "Hendra Wijaya"],   shift: "21.00–03.00" },
+      { id: 836, tanggal: "2027-12-02", warga: ["Slamet Riyadi",   "Dodi Kurniawan", "Eko Prasetyo"],    shift: "21.00–03.00" },
+      { id: 837, tanggal: "2027-12-03", warga: ["Fajar Nugroho",   "Gunawan Susanto","Hadi Sumarno"],    shift: "21.00–03.00" },
+      { id: 838, tanggal: "2027-12-04", warga: ["Irwan Setiawan",  "Joko Purnomo",   "Krisna Mahendra"], shift: "21.00–03.00" },
+      { id: 839, tanggal: "2027-12-05", warga: ["Budi Santoso",    "Slamet Riyadi",  "Fajar Nugroho"],   shift: "21.00–03.00" },
+      { id: 840, tanggal: "2027-12-06", warga: ["Agus Priyono",    "Dodi Kurniawan", "Gunawan Susanto"], shift: "21.00–03.00" },
+      { id: 841, tanggal: "2027-12-07", warga: ["Hendra Wijaya",   "Eko Prasetyo",   "Hadi Sumarno"],    shift: "21.00–03.00" },
+      { id: 842, tanggal: "2027-12-08", warga: ["Irwan Setiawan",  "Budi Santoso",   "Krisna Mahendra"], shift: "21.00–03.00" },
+      { id: 843, tanggal: "2027-12-09", warga: ["Joko Purnomo",    "Agus Priyono",   "Slamet Riyadi"],   shift: "21.00–03.00" },
+      { id: 844, tanggal: "2027-12-10", warga: ["Fajar Nugroho",   "Dodi Kurniawan", "Hendra Wijaya"],   shift: "21.00–03.00" },
+      { id: 845, tanggal: "2027-12-11", warga: ["Eko Prasetyo",    "Gunawan Susanto","Irwan Setiawan"],  shift: "21.00–03.00" },
+      { id: 846, tanggal: "2027-12-12", warga: ["Hadi Sumarno",    "Krisna Mahendra","Budi Santoso"],    shift: "21.00–03.00" },
+      { id: 847, tanggal: "2027-12-13", warga: ["Agus Priyono",    "Slamet Riyadi",  "Fajar Nugroho"],   shift: "21.00–03.00" },
+      { id: 848, tanggal: "2027-12-14", warga: ["Hendra Wijaya",   "Dodi Kurniawan", "Joko Purnomo"],    shift: "21.00–03.00" },
+      { id: 849, tanggal: "2027-12-15", warga: ["Eko Prasetyo",    "Irwan Setiawan", "Gunawan Susanto"], shift: "21.00–03.00" },
+      { id: 850, tanggal: "2027-12-16", warga: ["Hadi Sumarno",    "Budi Santoso",   "Krisna Mahendra"], shift: "21.00–03.00" },
+      { id: 851, tanggal: "2027-12-17", warga: ["Agus Priyono",    "Fajar Nugroho",  "Slamet Riyadi"],   shift: "21.00–03.00" },
+      { id: 852, tanggal: "2027-12-18", warga: ["Hendra Wijaya",   "Joko Purnomo",   "Dodi Kurniawan"],  shift: "21.00–03.00" },
+      { id: 853, tanggal: "2027-12-19", warga: ["Eko Prasetyo",    "Krisna Mahendra","Irwan Setiawan"],  shift: "21.00–03.00" },
+      { id: 854, tanggal: "2027-12-20", warga: ["Gunawan Susanto", "Hadi Sumarno",   "Budi Santoso"],    shift: "21.00–03.00" },
+      { id: 855, tanggal: "2027-12-21", warga: ["Agus Priyono",    "Slamet Riyadi",  "Fajar Nugroho"],   shift: "21.00–03.00" },
+      { id: 856, tanggal: "2027-12-22", warga: ["Hendra Wijaya",   "Dodi Kurniawan", "Joko Purnomo"],    shift: "21.00–03.00" },
+      { id: 857, tanggal: "2027-12-23", warga: ["Eko Prasetyo",    "Irwan Setiawan", "Krisna Mahendra"], shift: "21.00–03.00" },
+      { id: 858, tanggal: "2027-12-24", warga: ["Hadi Sumarno",    "Budi Santoso",   "Gunawan Susanto"], shift: "21.00–03.00" },
+      { id: 859, tanggal: "2027-12-25", warga: ["Agus Priyono",    "Fajar Nugroho",  "Slamet Riyadi"],   shift: "21.00–03.00" },
+      { id: 860, tanggal: "2027-12-26", warga: ["Hendra Wijaya",   "Joko Purnomo",   "Dodi Kurniawan"],  shift: "21.00–03.00" },
+      { id: 861, tanggal: "2027-12-27", warga: ["Eko Prasetyo",    "Krisna Mahendra","Irwan Setiawan"],  shift: "21.00–03.00" },
+      { id: 862, tanggal: "2027-12-28", warga: ["Gunawan Susanto", "Hadi Sumarno",   "Budi Santoso"],    shift: "21.00–03.00" },
+      { id: 863, tanggal: "2027-12-29", warga: ["Agus Priyono",    "Slamet Riyadi",  "Fajar Nugroho"],   shift: "21.00–03.00" },
+      { id: 864, tanggal: "2027-12-30", warga: ["Hendra Wijaya",   "Dodi Kurniawan", "Joko Purnomo"],    shift: "21.00–03.00" },
+      { id: 865, tanggal: "2027-12-31", warga: ["Eko Prasetyo",    "Irwan Setiawan", "Krisna Mahendra"], shift: "21.00–03.00" },
+    ];
+
+    // ---------------------------------------------------------
+    // STATE TANGGAL AKTIF
+    // currentDate  — objek Date untuk tanggal hari ini
+    // currentMonth — bulan yang sedang ditampilkan (0 = Januari)
+    // currentYear  — tahun yang sedang ditampilkan
+    // Keduanya diinisialisasi ke bulan/tahun saat ini agar
+    // halaman langsung menampilkan jadwal bulan yang relevan.
+    // ---------------------------------------------------------
+    let currentDate  = new Date();
+    let currentMonth = currentDate.getMonth();   // Bulan saat ini
+    let currentYear  = currentDate.getFullYear();
+
+    // ---------------------------------------------------------
+    // KONSTANTA BAHASA INDONESIA
+    // ---------------------------------------------------------
+    const NAMA_BULAN = [
+      "Januari", "Februari", "Maret", "April", "Mei", "Juni",
+      "Juli", "Agustus", "September", "Oktober", "November", "Desember"
+    ];
+    const NAMA_HARI = ["Minggu", "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"];
+
+    // ---------------------------------------------------------
+    // FUNGSI renderTabel(bulan, tahun)
+    // Merender tabel jadwal untuk bulan & tahun yang diberikan.
+    //   bulan — 0-based (0 = Januari, 11 = Desember)
+    //   tahun — tahun 4-digit, misal 2026
+    // ---------------------------------------------------------
+    function renderTabel(bulan, tahun) {
+      // 1. Update label navigasi
+      document.getElementById("label-bulan").textContent =
+        NAMA_BULAN[bulan] + " " + tahun;
+
+      // 2. Hitung jumlah hari dalam bulan ini
+      const jumlahHari = new Date(tahun, bulan + 1, 0).getDate();
+
+      // 3. Tanggal hari ini (untuk highlight)
+      const hariIni       = new Date();
+      const hariIniStr    = hariIni.getFullYear() + "-"
+        + String(hariIni.getMonth() + 1).padStart(2, "0") + "-"
+        + String(hariIni.getDate()).padStart(2, "0");
+
+      // 4. Build baris tabel
+      let baris = "";
+      for (let hari = 1; hari <= jumlahHari; hari++) {
+        const bulanStr  = String(bulan + 1).padStart(2, "0");
+        const hariStr   = String(hari).padStart(2, "0");
+        const tanggalStr = tahun + "-" + bulanStr + "-" + hariStr;
+
+        // Cari entri jadwal untuk tanggal ini
+        const entri = jadwal.find(j => j.tanggal === tanggalStr);
+
+        // Tentukan class highlight
+        const rowClass = tanggalStr === hariIniStr ? " class=\"table-warning\"" : "";
+
+        // Format tampilan tanggal: "01 Jan 2026"
+        const tglTampil = hariStr + " " + NAMA_BULAN[bulan].substring(0, 3) + " " + tahun;
+
+        // Nama hari
+        const namaHari = NAMA_HARI[new Date(tahun, bulan, hari).getDay()];
+
+        // Kolom isi
+        const namaWarga = entri ? entri.warga.join(", ") : "-";
+        const shift     = entri ? entri.shift : "-";
+
+        const shiftBadge = entri
+          ? "<span class=\"badge bg-secondary\">" + entri.shift + "</span>"
+          : "-";
+
+        // Tombol "Daftarkan Saya" selalu muncul di semua baris
+        const btnDaftar =
+          "<button class=\"btn btn-sm me-1 mb-1\" style=\"background:#dc2626;color:#fff8f0;\" " +
+            "onclick=\"daftarkanSaya('" + tanggalStr + "')\">" +
+            "<i class=\"bi bi-person-plus me-1\"></i>Daftar Saya" +
+          "</button>";
+
+        const aksi = entri
+          ? btnDaftar +
+            "<button class=\"btn btn-sm btn-warning me-1 mb-1\" onclick=\"editJadwal('" + tanggalStr + "')\">" +
+              "<i class=\"bi bi-pencil-square me-1\"></i>Edit" +
+            "</button>" +
+            "<button class=\"btn btn-sm btn-danger mb-1\" onclick=\"hapusJadwal('" + tanggalStr + "')\">" +
+              "<i class=\"bi bi-trash3 me-1\"></i>Hapus" +
+            "</button>"
+          : btnDaftar +
+            "<button class=\"btn btn-sm btn-success mb-1\" onclick=\"tambahJadwal('" + tanggalStr + "')\">" +
+              "<i class=\"bi bi-plus-circle me-1\"></i>Tambah" +
+            "</button>";
+
+        baris +=
+          "<tr" + rowClass + ">" +
+            "<td>" + hari + "</td>" +
+            "<td>" + tglTampil + "</td>" +
+            "<td>" + namaHari + "</td>" +
+            "<td>" + namaWarga + "</td>" +
+            "<td>" + shiftBadge + "</td>" +
+            "<td class=\"text-nowrap\">" + aksi + "</td>" +
+          "</tr>";
+      }
+
+      // 5. Render tabel ke dalam kontainer
+      document.getElementById("tabel-container").innerHTML =
+        "<div class=\"table-responsive\">" +
+          "<table class=\"table table-striped table-hover table-bordered align-middle\">" +
+            "<thead class=\"table-primary\">" +
+              "<tr>" +
+                "<th>#</th>" +
+                "<th>Tanggal</th>" +
+                "<th>Hari</th>" +
+                "<th>Nama Warga Jaga</th>" +
+                "<th>Shift</th>" +
+                "<th>Aksi</th>" +
+              "</tr>" +
+            "</thead>" +
+            "<tbody>" + baris + "</tbody>" +
+          "</table>" +
+        "</div>";
+    }
+
+    // ---------------------------------------------------------
+    // EVENT LISTENER — Navigasi Prev / Next
+    // ---------------------------------------------------------
+    document.getElementById("btn-prev").addEventListener("click", function () {
+      currentMonth--;
+      if (currentMonth < 0) {
+        currentMonth = 11;
+        currentYear--;
+      }
+      renderTabel(currentMonth, currentYear);
+    });
+
+    document.getElementById("btn-next").addEventListener("click", function () {
+      currentMonth++;
+      if (currentMonth > 11) {
+        currentMonth = 0;
+        currentYear++;
+      }
+      renderTabel(currentMonth, currentYear);
+    });
+
+    // ---------------------------------------------------------
+    // FUNGSI editJadwal(tanggal)
+    // Cari entri di array jadwal berdasarkan tanggal, isi form
+    // modal, lalu buka modal.
+    // ---------------------------------------------------------
+    // ---------------------------------------------------------
+    // HELPER: Render checkbox daftar warga ke dalam kontainer
+    // ---------------------------------------------------------
+    function renderWargaChecks(terpilih) {
+      const container = document.getElementById("edit-warga-checks");
+      container.innerHTML = warga.map(function (w) {
+        const checked = terpilih.includes(w.nama) ? "checked" : "";
+        return (
+          "<div class=\"col-12 col-sm-6 col-md-4\">" +
+            "<div class=\"form-check border rounded px-3 py-2\" style=\"background:#fff5f5;\">" +
+              "<input class=\"form-check-input\" type=\"checkbox\" value=\"" + w.nama + "\" " +
+                "id=\"chk-" + w.id + "\" " + checked + ">" +
+              "<label class=\"form-check-label\" for=\"chk-" + w.id + "\">" +
+                w.nama +
+              "</label>" +
+            "</div>" +
+          "</div>"
+        );
+      }).join("");
+    }
+
+    // ---------------------------------------------------------
+    // HELPER: Ambil nama warga yang dicentang dari checkbox
+    // ---------------------------------------------------------
+    function getCheckedWarga() {
+      return Array.from(
+        document.querySelectorAll("#edit-warga-checks input[type=checkbox]:checked")
+      ).map(function (el) { return el.value; });
+    }
+
+    // ---------------------------------------------------------
+    // FUNGSI editJadwal(tanggal)
+    // ---------------------------------------------------------
+    function editJadwal(tanggal) {
+      const entri = jadwal.find(j => j.tanggal === tanggal);
+      if (!entri) return;
+
+      const [thn, bln, hr] = tanggal.split("-");
+      document.getElementById("edit-tanggal-display").value =
+        hr + " " + NAMA_BULAN[parseInt(bln, 10) - 1] + " " + thn;
+      document.getElementById("edit-tanggal-value").value = tanggal;
+
+      // Render checkbox dengan nama yg sudah ada dicentang
+      renderWargaChecks(entri.warga);
+
+      document.getElementById("edit-shift").value = entri.shift;
+
+      document.getElementById("editModalLabel").innerHTML =
+        "<i class=\"bi bi-pencil-square me-2\"></i>Edit Jadwal";
+
+      bootstrap.Modal.getOrCreateInstance(document.getElementById("editModal")).show();
+    }
+
+    // ---------------------------------------------------------
+    // FUNGSI tambahJadwal(tanggal)
+    // ---------------------------------------------------------
+    function tambahJadwal(tanggal) {
+      const [thn, bln, hr] = tanggal.split("-");
+      document.getElementById("edit-tanggal-display").value =
+        hr + " " + NAMA_BULAN[parseInt(bln, 10) - 1] + " " + thn;
+      document.getElementById("edit-tanggal-value").value = tanggal;
+
+      // Render checkbox kosong semua
+      renderWargaChecks([]);
+      document.getElementById("edit-shift").value = "21.00–03.00";
+
+      document.getElementById("editModalLabel").innerHTML =
+        "<i class=\"bi bi-plus-circle me-2\"></i>Tambah Jadwal";
+
+      bootstrap.Modal.getOrCreateInstance(document.getElementById("editModal")).show();
+    }
+
+    // ---------------------------------------------------------
+    // FUNGSI simpanJadwal()
+    // ---------------------------------------------------------
+    function simpanJadwal() {
+      const tanggal   = document.getElementById("edit-tanggal-value").value;
+      const shiftInput = document.getElementById("edit-shift").value;
+      const namaWarga = getCheckedWarga();
+
+      if (namaWarga.length === 0) {
+        alert("Pilih minimal satu warga jaga!");
+        return;
+      }
+
+      const idx = jadwal.findIndex(j => j.tanggal === tanggal);
+      if (idx === -1) {
+        const newId = jadwal.length > 0 ? Math.max(...jadwal.map(j => j.id)) + 1 : 1;
+        jadwal.push({ id: newId, tanggal: tanggal, warga: namaWarga, shift: shiftInput });
+      } else {
+        jadwal[idx].warga = namaWarga;
+        jadwal[idx].shift = shiftInput;
+      }
+
+      bootstrap.Modal.getOrCreateInstance(document.getElementById("editModal")).hide();
+      renderTabel(currentMonth, currentYear);
+    }
+
+    // ---------------------------------------------------------
+    // FUNGSI daftarkanSaya(tanggal)
+    // Warga pilih nama sendiri dari dropdown, lalu ditambahkan
+    // ke jadwal tanggal tersebut (tidak menghapus nama lain)
+    // ---------------------------------------------------------
+    function daftarkanSaya(tanggal) {
+      const [thn, bln, hr] = tanggal.split("-");
+      document.getElementById("daftar-tanggal-display").value =
+        hr + " " + NAMA_BULAN[parseInt(bln, 10) - 1] + " " + thn;
+      document.getElementById("daftar-tanggal-value").value = tanggal;
+
+      // Isi dropdown nama warga
+      const sel = document.getElementById("daftar-nama");
+      sel.innerHTML = "<option value=\"\">— Pilih nama Anda —</option>" +
+        warga.map(function (w) {
+          return "<option value=\"" + w.nama + "\">" + w.nama + "</option>";
+        }).join("");
+
+      // Tampilkan info warga yang sudah terdaftar
+      const entri = jadwal.find(j => j.tanggal === tanggal);
+      const infoEl = document.getElementById("daftar-info");
+      if (entri && entri.warga.length > 0) {
+        infoEl.innerHTML = "<i class=\"bi bi-people me-1\"></i>Sudah terdaftar: <strong>" +
+          entri.warga.join(", ") + "</strong>";
+      } else {
+        infoEl.textContent = "Belum ada warga yang terdaftar untuk tanggal ini.";
+      }
+
+      bootstrap.Modal.getOrCreateInstance(document.getElementById("daftarModal")).show();
+    }
+
+    // ---------------------------------------------------------
+    // FUNGSI simpanDaftarSaya()
+    // Tambahkan nama warga terpilih ke jadwal (tidak overwrite)
+    // ---------------------------------------------------------
+    function simpanDaftarSaya() {
+      const tanggal = document.getElementById("daftar-tanggal-value").value;
+      const nama    = document.getElementById("daftar-nama").value;
+
+      if (!nama) {
+        alert("Silakan pilih nama Anda terlebih dahulu!");
+        return;
+      }
+
+      const idx = jadwal.findIndex(j => j.tanggal === tanggal);
+      if (idx === -1) {
+        // Buat entri baru
+        const newId = jadwal.length > 0 ? Math.max(...jadwal.map(j => j.id)) + 1 : 1;
+        jadwal.push({ id: newId, tanggal: tanggal, warga: [nama], shift: "21.00–03.00" });
+      } else {
+        // Tambahkan ke daftar jika belum ada
+        if (jadwal[idx].warga.includes(nama)) {
+          alert(nama + " sudah terdaftar di jadwal ini!");
+          return;
+        }
+        jadwal[idx].warga.push(nama);
+      }
+
+      bootstrap.Modal.getOrCreateInstance(document.getElementById("daftarModal")).hide();
+      renderTabel(currentMonth, currentYear);
+    }
+
+    // ---------------------------------------------------------
+    // FUNGSI hapusJadwal(tanggal)
+    // Tampilkan konfirmasi, jika ya hapus entri dari array jadwal
+    // lalu re-render tabel.
+    // ---------------------------------------------------------
+    function hapusJadwal(tanggal) {
+      const entri = jadwal.find(j => j.tanggal === tanggal);
+      if (!entri) return;
+
+      const [thn, bln, hr] = tanggal.split("-");
+      const tglLabel = hr + " " + NAMA_BULAN[parseInt(bln, 10) - 1] + " " + thn;
+
+      if (!confirm("Hapus jadwal tanggal " + tglLabel + "?\n\nTindakan ini tidak dapat dibatalkan.")) return;
+
+      jadwal = jadwal.filter(j => j.tanggal !== tanggal);
+      renderTabel(currentMonth, currentYear);
+    }
+
+    // ---------------------------------------------------------
+    // FUNGSI renderDaftarWarga()
+    // Render kartu grid daftar warga ke dalam #daftar-warga-container
+    // ---------------------------------------------------------
+    function renderDaftarWarga() {
+      const container = document.getElementById("daftar-warga-container");
+      if (!container) return;
+      container.innerHTML = warga.map(function (w) {
+        return (
+          "<div class=\"col-12 col-sm-6 col-md-4 col-lg-3\">" +
+            "<div class=\"kml-warga-item\">" +
+              "<span class=\"warga-no\">" + w.noRumah + "</span>" +
+              "<span class=\"warga-nama\">" + w.nama + "</span>" +
+              "<span class=\"warga-rumah\"><i class=\"bi bi-house me-1\"></i>No." + w.noRumah + "</span>" +
+            "</div>" +
+          "</div>"
+        );
+      }).join("");
+    }
+
+    // ---------------------------------------------------------
+    // INIT — Render tabel saat halaman pertama kali dimuat
+    // ---------------------------------------------------------
+    renderTabel(currentMonth, currentYear);
+    renderDaftarWarga();
+
+  </script>
+
+</body>
+</html>
